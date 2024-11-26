@@ -1,10 +1,14 @@
 import React from 'react'
+import HomeNotSignedIn from './Components/Home/HomeNotSignedIn'
 
 function App() {
   return (
-    <div>
-      welcome
-    </div>
+    <>
+      < div className='h-screen'>
+        <HomeNotSignedIn />
+
+      </div>
+    </>
   )
 }
 
