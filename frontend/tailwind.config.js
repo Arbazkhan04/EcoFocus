@@ -2,12 +2,13 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
   ],
   theme: {
     extend: {
       colors: {
         primaryBlue: {
-          light: '#6d28d9',
+          light: '#3683A7',
           DEFAULT: '007bff',
           dark: '#4c1d95',
         },
