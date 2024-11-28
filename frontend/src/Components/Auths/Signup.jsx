@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo192.png"; // Replace with your logo path
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useRegisterMutation } from "../../slices/userApiSlice";
 import { setCredentials } from "../../slices/authSlice";
 import { useNavigate } from "react-router-dom";
-
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
