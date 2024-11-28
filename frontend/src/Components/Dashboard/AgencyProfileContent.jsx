@@ -71,7 +71,7 @@ const AgencyProfileContent = () => {
                 </div>
 
                 {/* Agency Requests */}
-                <div className="bg-white p-6 rounded shadow-md">
+                <div className="bg-white p-6 col-span-2 rounded shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">Agency Requests</h2>
                     <table className="w-full border-collapse border border-gray-300">
                         <thead>
@@ -83,7 +83,7 @@ const AgencyProfileContent = () => {
                                 <th className="border border-gray-300 px-4 py-2">Deny</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody >
                             <tr>
                                 <td className="border border-gray-300 px-4 py-2">USERNAME</td>
                                 <td className="border border-gray-300 px-4 py-2">Email@mail.email</td>

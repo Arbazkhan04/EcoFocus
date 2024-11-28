@@ -3,6 +3,8 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import DashboardHomePage from "./DashboardHomePage"; // Home page content
 import UserProfileContent from "./UserProfileContent"; // User Profile content
 import AgencyProfileContent from "./AgencyProfileContent";
+import CreateNewClient from "./CreateNewClient";
+import ClientInformation from "./ClientInformation";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -69,6 +71,8 @@ const Dashboard = () => {
         { label: "Importer", icon: "ri-file-upload-line", path: "/dashboard/importer" },
         { label: "Grunnlagsdata", icon: "ri-database-2-line", path: "/dashboard/grunnlagsdata" },
         { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
+        { label: "Create New Client", icon: "ri-file-chart-line", path: "/dashboard/create-new-client" },
+        { label: "Client Information", icon: "ri-file-chart-line", path: "/dashboard/client-information" },
     ];
 
     const bottomNavigationLinks = [
@@ -184,13 +188,15 @@ const Dashboard = () => {
                         <Route path="/dashboard" element={<DashboardHomePage />} />
                         <Route path="/user-profile" element={<UserProfileContent />} />
                         <Route path="/agency-profile" element={<AgencyProfileContent />} />
-                        <Route path="/dashboard/informasjon" element={<div>Informasjon Page</div>} />
-                        <Route path="/dashboard/importer" element={<div>Importer Page</div>} />
-                        <Route path="/dashboard/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
-                        <Route path="/dashboard/rapporter" element={<div>Rapporter Page</div>} />
-                        <Route path="/dashboard/mod-panel" element={<div>ModPanel Page</div>} />
-                        <Route path="/dashboard/admin-panel" element={<div>AdminPanel Page</div>} />
-                        <Route path="/dashboard/logout" element={<div>Logout Page</div>} />
+                        <Route path="/informasjon" element={<div>Informasjon Page</div>} />
+                        <Route path="/importer" element={<div>Importer Page</div>} />
+                        <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
+                        <Route path="/rapporter" element={<div>Rapporter Page</div>} />
+                        <Route path="/create-new-client" element={<CreateNewClient />} />
+                        <Route path="/client-information" element={<ClientInformation />} />
+                        <Route path="/mod-panel" element={<div>ModPanel Page</div>} />
+                        <Route path="/admin-panel" element={<div>AdminPanel Page</div>} />
+                        <Route path="/logout" element={<div>Logout Page</div>} />
                         <Route path="/" element={<DashboardHomePage />} />
                     </Routes>
                 </main>

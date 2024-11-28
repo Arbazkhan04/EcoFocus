@@ -124,7 +124,7 @@ const UserProfileContent = () => {
                 </div>
 
                 {/* My Clients */}
-                <div className="bg-white p-6 rounded shadow-md">
+                <div className="bg-white p-6 rounded col-span-2 2xl:col-span-1 shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">My Clients</h2>
                     <table className="w-full border-collapse border border-gray-300">
                         <thead>
@@ -157,7 +157,7 @@ const UserProfileContent = () => {
                 </div>
 
                 {/* Delete User */}
-                <div className="bg-white p-6 rounded shadow-md">
+                <div className="bg-white p-6 col-span-2 2xl:col-span-1 rounded shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">Delete My User</h2>
                     <p className="text-gray-600 mb-4">
                         This will delete all your data. The only data that will not be deleted is
