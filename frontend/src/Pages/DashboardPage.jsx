@@ -1,12 +1,12 @@
+// DashboardPage.js
 import React from 'react';
-import Dashboard from '../Components/Dashboard/Dashboard'; // Import the Dashboard component (update the path accordingly)
-
+import Dashboard from '../Components/Dashboard/Dashboard'; // Ensure the correct path
 
 const DashboardPage = () => {
     return (
-        <div>
+        <>
             <Dashboard />
-        </div>
+        </>
     );
 };
 

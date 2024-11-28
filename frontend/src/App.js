@@ -6,13 +6,14 @@ import DashboardPage from './Pages/DashboardPage';
 
 function App() {
   return (
-    <div className='bg-background-Default'>
-      <Router >
+    <div className="bg-background-Default">
+      <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          {/* Allow nested routes under Dashboard */}
+          <Route path="/dashboard/*" element={<DashboardPage />} />
         </Routes>
       </Router>
     </div>

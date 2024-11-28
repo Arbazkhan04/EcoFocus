@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
+import DashboardHomePage from "./DashboardHomePage"; // Home page content
+import UserProfileContent from "./UserProfileContent"; // User Profile content
+import AgencyProfileContent from "./AgencyProfileContent";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
+    const location = useLocation();
 
     // Function to handle sidebar toggle
     const toggleSidebar = () => {
@@ -26,6 +31,54 @@ const Dashboard = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+
+    // Generate breadcrumbs
+    const generateBreadcrumbs = () => {
+        const pathnames = location.pathname.split("/").filter((x) => x);
+
+        // Avoid displaying "Dashboard" twice
+        const filteredPathnames = pathnames.filter((path, index) => !(path === "dashboard" && index !== 0));
+
+        return (
+            <div className="text-sm text-blue-500 font-semibold flex items-center space-x-2">
+                {filteredPathnames.map((value, index) => {
+                    const to = `/${filteredPathnames.slice(0, index + 1).join("/")}`;
+                    const isLast = index === filteredPathnames.length - 1;
+                    return (
+                        <span key={to} className="flex items-center">
+                            {index > 0 && <span className="text-gray-400 mx-2">/</span>}
+                            {isLast ? (
+                                <span className="text-gray-800">
+                                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                                </span>
+                            ) : (
+                                <Link to={to} className="hover:underline">
+                                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                                </Link>
+                            )}
+                        </span>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const topNavigationLinks = [
+        { label: "Dashboard", icon: "ri-home-line", path: "/dashboard" },
+        { label: "Informasjon", icon: "ri-information-line", path: "/dashboard/informasjon" },
+        { label: "Importer", icon: "ri-file-upload-line", path: "/dashboard/importer" },
+        { label: "Grunnlagsdata", icon: "ri-database-2-line", path: "/dashboard/grunnlagsdata" },
+        { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
+    ];
+
+    const bottomNavigationLinks = [
+        { label: "Agency Profile", icon: "ri-user-line", path: "/dashboard/agency-profile" },
+        { label: "User Profile", icon: "ri-user-2-line", path: "/dashboard/user-profile" },
+        { label: "ModPanel", icon: "ri-settings-2-line", path: "/dashboard/mod-panel" },
+        { label: "AdminPanel", icon: "ri-shield-user-line", path: "/dashboard/admin-panel" },
+        { label: "Logg av", icon: "ri-logout-circle-line", path: "/dashboard/logout", color: "text-red-600 hover:text-red-800" },
+    ];
+
     return (
         <div className="min-h-screen flex bg-gray-100">
             {/* Sidebar */}
@@ -34,7 +87,7 @@ const Dashboard = () => {
                     } flex flex-col`}
             >
                 {/* Logo and Toggle */}
-                <div className="p-4 border-b flex items-center justify-between">
+                <div className="p-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
                     <span
                         className={`text-lg font-bold text-gray-800 ${isSidebarCollapsed ? "hidden" : "block"
                             }`}
@@ -46,134 +99,100 @@ const Dashboard = () => {
                         className="text-gray-500 hover:text-gray-800 focus:outline-none"
                     >
                         <i
-                            className={`ri-${isSidebarCollapsed ? "menu-unfold" : "menu-fold"
-                                }-line text-xl`}
+                            className={`ri-${isSidebarCollapsed ? "menu-unfold" : "menu-fold"}-line text-xl`}
                         ></i>
                     </button>
                 </div>
 
                 {/* Navigation Links */}
-                <nav className="flex-grow p-4 space-y-4">
-                    {[
-                        { icon: "ri-home-line", label: "Dashboard" },
-                        { icon: "ri-information-line", label: "Informasjon" },
-                        { icon: "ri-file-upload-line", label: "Importer" },
-                        { icon: "ri-database-2-line", label: "Grunnlagsdata" },
-                        { icon: "ri-file-chart-line", label: "Rapporter" },
-                    ].map((item, index) => (
-                        <a
-                            key={index}
-                            href="#"
-                            className="flex items-center text-gray-700 hover:text-blue-500"
-                        >
-                            <i className={`${item.icon} text-xl`}></i>
-                            <span
-                                className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"
+                <nav className="flex flex-col justify-between flex-grow">
+                    {/* Top Section */}
+                    <div className="p-4 space-y-4">
+                        {topNavigationLinks.map((item, index) => (
+                            <Link
+                                key={index}
+                                to={item.path}
+                                className={`flex items-center ${item.color || "text-gray-700 hover:text-blue-500"
                                     }`}
                             >
-                                {item.label}
-                            </span>
-                        </a>
-                    ))}
-                </nav>
+                                <i className={`${item.icon} text-xl`}></i>
+                                <span
+                                    className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"
+                                        }`}
+                                >
+                                    {item.label}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
 
-                {/* Footer Links */}
-                <div className="p-4 border-t space-y-4">
-                    {[
-                        { icon: "ri-user-line", label: "AgencyProfile" },
-                        { icon: "ri-user-2-line", label: "UserProfile" },
-                        { icon: "ri-settings-2-line", label: "ModPanel" },
-                        { icon: "ri-shield-user-line", label: "AdminPanel" },
-                        { icon: "ri-logout-circle-line", label: "Logg av", color: "text-red-600 hover:text-red-800" },
-                    ].map((item, index) => (
-                        <a
-                            key={index}
-                            href="#"
-                            className={`flex items-center ${item.color || "text-gray-700 hover:text-blue-500"
-                                }`}
-                        >
-                            <i className={`${item.icon} text-xl`}></i>
-                            <span
-                                className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"
+                    {/* Bottom Section */}
+                    <div className="p-4 space-y-4 sticky bottom-0 bg-white">
+                        {bottomNavigationLinks.map((item, index) => (
+                            <Link
+                                key={index}
+                                to={item.path}
+                                className={`flex items-center ${item.color || "text-gray-700 hover:text-blue-500"
                                     }`}
                             >
-                                {item.label}
-                            </span>
-                        </a>
-                    ))}
-                </div>
+                                <i className={`${item.icon} text-xl`}></i>
+                                <span
+                                    className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"
+                                        }`}
+                                >
+                                    {item.label}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </nav>
             </aside>
 
             {/* Main Content */}
-            <div
-                className={`flex-1 flex flex-col transition-all duration-300`}
-            >
+            <div className="flex-1 flex flex-col transition-all duration-300">
                 {/* Header */}
                 <header className="w-full bg-white shadow p-4 flex justify-between items-center">
-                    <div className="text-blue-500 font-bold">Dashboard</div>
+                    {/* Breadcrumbs */}
+                    <div className="flex items-center text-sm text-blue-500 font-semibold">
+                        <div className="flex items-center space-x-2">
+                            {generateBreadcrumbs()}
+                        </div>
+                    </div>
+
+                    {/* Header Controls */}
                     <div className="flex items-center space-x-4">
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Synkroniser Data
-                        </button>
-                        <select className="border border-gray-300 rounded px-3 py-2">
-                            <option>ClientName</option>
-                        </select>
-                        <select className="border border-gray-300 rounded px-3 py-2">
-                            <option>2024</option>
-                        </select>
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Opprett ny Klient
-                        </button>
-                        <button className="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300">
-                            Hjelp
-                        </button>
+                        <i className="ri-notification-line text-2xl text-gray-500 cursor-pointer"></i>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Synkroniser Data</button>
+                        <div className="flex items-center space-x-4">
+                            <select className="border border-gray-300 rounded px-3 py-2 bg-white">
+                                <option value="ClientName">ClientName</option>
+                                <option value="Client1">Client1</option>
+                            </select>
+                            <select className="border border-gray-300 rounded px-3 py-2 bg-white">
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                            </select>
+                        </div>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Opprett ny Klient</button>
+                        <button className="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300">Hjelp</button>
                     </div>
                 </header>
 
                 {/* Dashboard Content */}
                 <main className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-                        {/* Steps Section */}
-                        <div className="lg:col-span-7 md:col-span-2 col-span-1 space-y-6">
-                            {[
-                                {
-                                    step: "STEP 1",
-                                    description: "OPPRETT NY KLIENT OG KLARGJØR FOR IMPORT AV DATA.",
-                                    action: "Opprett ny Klient",
-                                },
-                                {
-                                    step: "STEP 2",
-                                    description: "VELG IMPORTKILDE, KONTROLLER OG IMPORTER DATA.",
-                                    action: "Gå til Import",
-                                },
-                                {
-                                    step: "STEP 3",
-                                    description: "JOBB MED DATAINNSAMLING OG FORBEDRING AV DATAKILDER.",
-                                    action: "Gå til Grunnlagsdata",
-                                },
-                            ].map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="p-6 bg-white shadow-md border-2 border-blue-500 rounded"
-                                >
-                                    <h2 className="text-blue-500 font-bold text-lg mb-4">
-                                        {item.step}
-                                    </h2>
-                                    <p className="text-gray-600 mb-4">{item.description}</p>
-                                    <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                        {item.action}
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Image Section */}
-                        <div className="lg:col-span-5 md:col-span-2 col-span-1 flex justify-center items-center">
-                            <div className="bg-gray-300 border border-gray-400 w-full h-64 flex justify-center items-center">
-                                <i className="ri-image-line text-gray-500 text-6xl"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <Routes>
+                        <Route path="/dashboard" element={<DashboardHomePage />} />
+                        <Route path="/user-profile" element={<UserProfileContent />} />
+                        <Route path="/agency-profile" element={<AgencyProfileContent />} />
+                        <Route path="/dashboard/informasjon" element={<div>Informasjon Page</div>} />
+                        <Route path="/dashboard/importer" element={<div>Importer Page</div>} />
+                        <Route path="/dashboard/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
+                        <Route path="/dashboard/rapporter" element={<div>Rapporter Page</div>} />
+                        <Route path="/dashboard/mod-panel" element={<div>ModPanel Page</div>} />
+                        <Route path="/dashboard/admin-panel" element={<div>AdminPanel Page</div>} />
+                        <Route path="/dashboard/logout" element={<div>Logout Page</div>} />
+                        <Route path="/" element={<DashboardHomePage />} />
+                    </Routes>
                 </main>
             </div>
         </div>
