@@ -3,6 +3,8 @@ import HomePage from './Pages/HomePage';
 import LoginPage from './Pages/LoginPage';
 import SignupPage from './Pages/SignupPage';
 import DashboardPage from './Pages/DashboardPage';
+import EmailVerification from './Components/Auths/VerifyEmail';
+import ResetPassword from './Components/Auths/ResetPassword';
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           {/* Allow nested routes under Dashboard */}
           <Route path="/dashboard/*" element={<DashboardPage />} />
         </Routes>
