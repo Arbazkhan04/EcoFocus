@@ -107,7 +107,7 @@ const Dashboard = () => {
                 {/* Navigation Links */}
                 <nav className="flex flex-col justify-between flex-grow">
                     {/* Top Section */}
-                    <div className="p-4 space-y-4">
+                    <div className="p-4 space-y-4 sticky top-12">
                         {topNavigationLinks.map((item, index) => (
                             <Link
                                 key={index}
