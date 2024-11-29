@@ -41,7 +41,7 @@ const Signup = () => {
       }
       setErrors({});
       dispatch(setCredentials({ ...res }));
-      navigate("/dashboard"); // Redirect to dashboard on successful registration
+      navigate("/verify-email"); // Redirect to dashboard on successful registration
     } catch (err) {
       setErrors({ apiError: err.message || err.error });
     }

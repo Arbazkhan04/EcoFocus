@@ -8,7 +8,7 @@ import ResetPassword from './Components/Auths/ResetPassword';
 
 function App() {
   return (
-    <div className="bg-background-Default">
+    <div className="bg-background-Default"> 
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />

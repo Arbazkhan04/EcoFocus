@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo192.png"; // Replace with the correct path
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLoginMutation } from "../../slices/userApiSlice";
 import { setCredentials } from "../../slices/authSlice";
 import { forgotPassword } from '../../apiManager/auth/authorization';
+import { useEffect } from "react";
 const Login = () => {
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
@@ -17,6 +19,17 @@ const Login = () => {
   const [forgotError, setForgotError] = useState(""); // Error for forgot password
   const [forgotSuccess, setForgotSuccess] = useState(""); // Success message for forgot password
   const [isForgotLoading, setIsForgotLoading] = useState(false); // Loading state for forgot password
+
+  const { userInfo } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (userInfo && !userInfo.isEmailVerified) {
+      navigate("/verify-email"); // Redirect to verfiy email if user is already logged in
+    }
+    if(userInfo && userInfo.isEmailVerified) {
+      navigate("/dashboard"); // Redirect to dashboard if user is already logged in
+    }
+  },[userInfo,navigate])
 
   const validateInputs = () => {
     const newErrors = {};
@@ -44,7 +57,8 @@ const Login = () => {
         return;
       }
       dispatch(setCredentials({ ...res }));
-      navigate("/verify-email"); // Redirect on successful login
+      if(!res.data.isEmailVerified) navigate("/verify-email"); // Redirect on verify email 
+      navigate("/dashboard"); // Redirect on dashboard
     } catch (err) {
       setErrors({ apiError: err.message || "An error occurred during login." });
     }

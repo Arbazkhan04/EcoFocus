@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { resetPassword } from "../../apiManager/auth/authorization";
+import { setCredentials } from "../../slices/authSlice";
+import { useDispatch } from "react-redux";
+
 const ResetPassword = () => {
   const { token } = useParams(); // Get token from URL
   const navigate = useNavigate();
@@ -9,6 +12,8 @@ const ResetPassword = () => {
   const [error, setError] = useState(""); // Error state
   const [success, setSuccess] = useState(""); // Success state
   const [isLoading, setIsLoading] = useState(false); // Loading state
+
+  const dispatch = useDispatch();
 
   const validateInputs = () => {
     if (!password) {
@@ -39,7 +44,8 @@ const ResetPassword = () => {
         return;
       }
       setSuccess(res.message || "Password reset successfully!");
-        navigate("/login"); // Redirect to login page after success
+      dispatch(setCredentials({ ...res }));
+      navigate("/login"); // Redirect to login page after success
     } catch (err) {
       setError(err.message || "An error occurred. Please try again.");
     } finally {

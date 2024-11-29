@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
 import { verifycode, resendVerificationCode } from "../../apiManager/auth/authorization";
+import { useDispatch, useSelector } from "react-redux";
+import { setCredentials } from "../../slices/authSlice";
+import { useNavigate } from "react-router-dom";
+
 
 const EmailVerification = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]); // 6-box code input
@@ -9,6 +12,8 @@ const EmailVerification = () => {
   const [isLoading, setIsLoading] = useState(false); // State for loading
   const email = useSelector((state) => state.auth.userInfo.email); // Get email from Redux
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   // Handle input changes
   const handleChange = (value, index) => {
     if (/^\d?$/.test(value)) {
@@ -39,6 +44,8 @@ const EmailVerification = () => {
       if (response.data) {
         setSuccess("Email verified successfully!");
         setCode(["", "", "", "", "", ""]); // Clear the input boxes
+        dispatch(setCredentials({ ...response }));
+        navigate("/dashboard"); // Redirect to dashboard on successful verification
       } else {
         setError(response.message || "Invalid verification code.");
       }
