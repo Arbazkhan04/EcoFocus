@@ -9,6 +9,7 @@ import Informasjon from "./Informasjon";
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
     const location = useLocation();
 
     // Function to handle sidebar toggle
@@ -32,7 +33,6 @@ const Dashboard = () => {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
-
 
     // Generate breadcrumbs
     const generateBreadcrumbs = () => {
@@ -177,7 +177,53 @@ const Dashboard = () => {
                             </select>
                         </div>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Opprett ny Klient</button>
-                        <button className="bg-gray-200 text-gray-600 px-4 py-2 rounded hover:bg-gray-300">Hjelp</button>
+                        <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded hover:bg-gray-300">Hjelp</button>
+
+                        {/* Dropdown Button */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="bg-blue-100 text-blue-600 py-1 px-2  rounded hover:bg-gray-300 flex items-center"
+                            >
+                                <i class="ri-arrow-down-s-fill"></i>
+                            </button>
+                            {isDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg">
+                                    <ul>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                Selected Client
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                Selected Year
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                Logged-in user
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                User Role
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                ImportKilde
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" className="block px-4 py-2 hover:bg-gray-100">
+                                                Agency Registration Number
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
 
