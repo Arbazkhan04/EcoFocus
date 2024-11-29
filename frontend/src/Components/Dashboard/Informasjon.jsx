@@ -1,6 +1,6 @@
 import React from "react";
 
-const ClientInformation = () => {
+const Informasjon = () => {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-2xl font-bold text-blue-500 mb-6 text-center">Information</h1>
@@ -146,4 +146,4 @@ const ClientInformation = () => {
     );
 };
 
-export default ClientInformation;
+export default Informasjon;

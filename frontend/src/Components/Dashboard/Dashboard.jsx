@@ -4,7 +4,7 @@ import DashboardHomePage from "./DashboardHomePage"; // Home page content
 import UserProfileContent from "./UserProfileContent"; // User Profile content
 import AgencyProfileContent from "./AgencyProfileContent";
 import CreateNewClient from "./CreateNewClient";
-import ClientInformation from "./ClientInformation";
+import Informasjon from "./Informasjon";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -66,13 +66,12 @@ const Dashboard = () => {
     };
 
     const topNavigationLinks = [
-        { label: "Dashboard", icon: "ri-home-line", path: "/dashboard" },
+        { label: "Dashboard", icon: "ri-dashboard-line", path: "/dashboard" },
         { label: "Informasjon", icon: "ri-information-line", path: "/dashboard/informasjon" },
         { label: "Importer", icon: "ri-file-upload-line", path: "/dashboard/importer" },
         { label: "Grunnlagsdata", icon: "ri-database-2-line", path: "/dashboard/grunnlagsdata" },
         { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
-        { label: "Create New Client", icon: "ri-file-chart-line", path: "/dashboard/create-new-client" },
-        { label: "Client Information", icon: "ri-file-chart-line", path: "/dashboard/client-information" },
+        { label: "Create New Client", icon: "ri-add-box-line", path: "/dashboard/create-new-client" },
     ];
 
     const bottomNavigationLinks = [
@@ -188,12 +187,11 @@ const Dashboard = () => {
                         <Route path="/dashboard" element={<DashboardHomePage />} />
                         <Route path="/user-profile" element={<UserProfileContent />} />
                         <Route path="/agency-profile" element={<AgencyProfileContent />} />
-                        <Route path="/informasjon" element={<div>Informasjon Page</div>} />
+                        <Route path="/informasjon" element={<Informasjon />} />
                         <Route path="/importer" element={<div>Importer Page</div>} />
                         <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
                         <Route path="/rapporter" element={<div>Rapporter Page</div>} />
                         <Route path="/create-new-client" element={<CreateNewClient />} />
-                        <Route path="/client-information" element={<ClientInformation />} />
                         <Route path="/mod-panel" element={<div>ModPanel Page</div>} />
                         <Route path="/admin-panel" element={<div>AdminPanel Page</div>} />
                         <Route path="/logout" element={<div>Logout Page</div>} />

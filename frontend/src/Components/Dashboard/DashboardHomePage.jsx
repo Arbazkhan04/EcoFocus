@@ -1,4 +1,5 @@
 import React from "react";
+import dashboard from "../../assets/dashboard.jpg";
 
 const DashboardHomePage = () => {
     return (
@@ -37,9 +38,7 @@ const DashboardHomePage = () => {
 
             {/* Image Section */}
             <div className="lg:col-span-5 md:col-span-2 col-span-1 flex justify-center items-center">
-                <div className="bg-gray-300 border border-gray-400 w-full h-64 flex justify-center items-center">
-                    <i className="ri-image-line text-gray-500 text-6xl"></i>
-                </div>
+                <img src={dashboard} alt="" />
             </div>
         </div>
     );
