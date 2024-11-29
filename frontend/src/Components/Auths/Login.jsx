@@ -23,13 +23,14 @@ const Login = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (userInfo && !userInfo.isEmailVerified) {
-      navigate("/verify-email"); // Redirect to verfiy email if user is already logged in
+    if (userInfo) {
+      if (!userInfo.isEmailVerified) {
+        navigate("/verify-email"); // Redirect to verify email if user is already logged in
+      } else {
+        navigate("/dashboard"); // Redirect to dashboard if user is already logged in
+      }
     }
-    if(userInfo && userInfo.isEmailVerified) {
-      navigate("/dashboard"); // Redirect to dashboard if user is already logged in
-    }
-  },[userInfo,navigate])
+  }, [userInfo, navigate]);
 
   const validateInputs = () => {
     const newErrors = {};
@@ -157,6 +158,7 @@ const Login = () => {
           {/* Forgot Password Button */}
           <div className="mt-4 text-center">
             <button
+               type="button"
               onClick={() => setIsModalOpen(true)} // Open modal
               className="text-blue-500 underline"
             >
