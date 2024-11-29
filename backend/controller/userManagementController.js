@@ -13,7 +13,7 @@ const createUser = async (req, res) => {
 
          await user.save();
         //jwt token
-        const token = user.createJWT();
+        // const token = user.createJWT();
 
         // Send verification email
         // Send the new verification code via email
@@ -244,7 +244,7 @@ const forgotPassword = async (req, res, next) => {
   
       res
         .status(200)
-        .json({ data: true, message: "Password reset successful" });
+        .json({ data: true, message: "Password reset successful", email: user.email, isEmailVerified: user.isEmailVerified, token: user.createJWT() });
     } catch (err) {
       return res.status(200).json({ error: err.message, message: "Password reset failed", data: false });
     }
@@ -282,6 +282,9 @@ const forgotPassword = async (req, res, next) => {
 
         res.status(200).json({
             message: 'Email verified successfully!',
+            email: user.email,
+            isEmailVerified: user.isEmailVerified,
+            token: user.createJWT(), //create jwt token for the verified user
             data: true
         });
     } catch (error) {
