@@ -1,5 +1,6 @@
 const User = require('../modals/userManagementModal');
 const sendEmail = require("../utils/sendEmail.js");
+const Agency = require('../modals/agencyManagementModal');
 const mongoose = require('mongoose'); // Ensure mongoose is imported
 const crypto = require('crypto');
 

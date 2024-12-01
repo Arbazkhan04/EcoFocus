@@ -19,11 +19,13 @@ app.use(cors())
 const userManagementRoutes = require('./routes/userManagementRouter.js');
 const companyManagementRoutes = require('./routes/companyManagementRouter.js');
 const requestManagementRoutes = require('./routes/requestManagementRouter.js');
+const agencyManagementRoutes = require('./routes/agencyManagementRouter.js');
 
 //start using routes
 app.use('/api/userManagementRoutes',userManagementRoutes);
 app.use('/api/companyManagementRoutes',companyManagementRoutes);
 app.use('/api/requestManagementRoutes',requestManagementRoutes);
+app.use('/api/agencyManagementRoutes',agencyManagementRoutes);
 //end usng routes
 
 
