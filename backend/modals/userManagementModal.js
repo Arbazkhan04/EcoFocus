@@ -29,12 +29,7 @@ const UserSchema = new mongoose.Schema({
         required: true,
         default: 'user' // Default value
     },
-    companies: [
-        {
-            companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
-            role: { type: String, enum: ['admin', 'user'] }
-        }
-    ],
+    
     isEmailVerified: {
         type: Boolean,
         default: false // Initially set to false
