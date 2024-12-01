@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import DashboardHomePage from "./DashboardHomePage"; // Home page content
 import UserProfileContent from "./UserProfileContent"; // User Profile content
 import AgencyProfileContent from "./AgencyProfileContent";
-import CreateNewClient from "./CreateNewClient";
 import Informasjon from "./Informasjon";
+import CreateNewClient from "./CreateNewClient";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
     const location = useLocation();
+    const navigate = useNavigate();
+    const [isGrunnlagsdataOpen, setIsGrunnlagsdataOpen] = useState(false);
+
 
     // Function to handle sidebar toggle
     const toggleSidebar = () => {
@@ -69,9 +72,15 @@ const Dashboard = () => {
         { label: "Dashboard", icon: "ri-dashboard-line", path: "/dashboard" },
         { label: "Informasjon", icon: "ri-information-line", path: "/dashboard/informasjon" },
         { label: "Importer", icon: "ri-file-upload-line", path: "/dashboard/importer" },
-        { label: "Grunnlagsdata", icon: "ri-database-2-line", path: "/dashboard/grunnlagsdata" },
+        {
+            label: "Grunnlagsdata",
+            icon: "ri-database-2-line",
+            submenu: [
+                { label: "Submenu 1", path: "/dashboard/grunnlagsdata/submenu1" },
+                { label: "Submenu 2", path: "/dashboard/grunnlagsdata/submenu2" },
+            ],
+        }, ,
         { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
-        { label: "Create New Client", icon: "ri-add-box-line", path: "/dashboard/create-new-client" },
     ];
 
     const bottomNavigationLinks = [
@@ -111,22 +120,49 @@ const Dashboard = () => {
                 <nav className="flex flex-col justify-between flex-grow">
                     {/* Top Section */}
                     <div className="p-4 space-y-4 sticky top-12">
-                        {topNavigationLinks.map((item, index) => (
-                            <Link
-                                key={index}
-                                to={item.path}
-                                className={`flex items-center ${item.color || "text-gray-700 hover:text-blue-500"
-                                    }`}
-                            >
-                                <i className={`${item.icon} text-xl`}></i>
-                                <span
-                                    className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"
+                        {topNavigationLinks.map((item, index) =>
+                            item.submenu ? (
+                                <div key={index}>
+                                    <button
+                                        onClick={() => setIsGrunnlagsdataOpen(!isGrunnlagsdataOpen)}
+                                        className="flex items-center text-gray-700 hover:text-blue-500 w-full"
+                                    >
+                                        <i className={`${item.icon} text-xl`}></i>
+                                        <span className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"}`}>
+                                            {item.label}
+                                        </span>
+                                        <i
+                                            className={`ml-auto ri-arrow-${isGrunnlagsdataOpen ? "up" : "down"}-s-line`}
+                                        ></i>
+                                    </button>
+                                    {isGrunnlagsdataOpen && !isSidebarCollapsed && (
+                                        <div className="ml-8 mt-2 space-y-2">
+                                            {item.submenu.map((submenuItem, subIndex) => (
+                                                <Link
+                                                    key={subIndex}
+                                                    to={submenuItem.path}
+                                                    className="block text-gray-700 hover:text-blue-500"
+                                                >
+                                                    {submenuItem.label}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <Link
+                                    key={index}
+                                    to={item.path}
+                                    className={`flex items-center ${item.color || "text-gray-700 hover:text-blue-500"
                                         }`}
                                 >
-                                    {item.label}
-                                </span>
-                            </Link>
-                        ))}
+                                    <i className={`${item.icon} text-xl`}></i>
+                                    <span className={`ml-2 ${isSidebarCollapsed ? "hidden" : "inline"}`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            )
+                        )}
                     </div>
 
                     {/* Bottom Section */}
@@ -176,7 +212,9 @@ const Dashboard = () => {
                                 <option value="2023">2023</option>
                             </select>
                         </div>
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Opprett ny Klient</button>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => navigate("/dashboard/create-new-client")}>
+                            Opprett ny Klient
+                        </button>
                         <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded hover:bg-gray-300">Hjelp</button>
 
                         {/* Dropdown Button */}
@@ -234,10 +272,10 @@ const Dashboard = () => {
                         <Route path="/user-profile" element={<UserProfileContent />} />
                         <Route path="/agency-profile" element={<AgencyProfileContent />} />
                         <Route path="/informasjon" element={<Informasjon />} />
+                        <Route path="/create-new-client" element={<CreateNewClient />} />
                         <Route path="/importer" element={<div>Importer Page</div>} />
                         <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
                         <Route path="/rapporter" element={<div>Rapporter Page</div>} />
-                        <Route path="/create-new-client" element={<CreateNewClient />} />
                         <Route path="/mod-panel" element={<div>ModPanel Page</div>} />
                         <Route path="/admin-panel" element={<div>AdminPanel Page</div>} />
                         <Route path="/logout" element={<div>Logout Page</div>} />

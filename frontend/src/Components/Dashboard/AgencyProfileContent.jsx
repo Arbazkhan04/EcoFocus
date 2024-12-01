@@ -36,16 +36,36 @@ const AgencyProfileContent = () => {
                 </div>
 
                 {/* Manage Access */}
-                <div className="bg-white p-6 rounded shadow-md">
+                <div className="bg-white p-6 col-span-2 2xl:col-span-1 rounded shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">Manage Access</h2>
-                    <p className="text-gray-600">
-                        Select from all <span className="font-bold">agency users</span> who can have access to the clients. Check for
-                        access, uncheck to remove access.
-                    </p>
+                    <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr>
+                                <th className="border border-gray-300 px-4 py-2">Name</th>
+                                <th className="border border-gray-300 px-4 py-2">Email</th>
+                                <th className="border border-gray-300 px-4 py-2">Phone</th>
+                                <th className="border border-gray-300 px-4 py-2">Accept</th>
+                                <th className="border border-gray-300 px-4 py-2">Deny</th>
+                            </tr>
+                        </thead>
+                        <tbody >
+                            <tr>
+                                <td className="border border-gray-300 px-4 py-2">USERNAME</td>
+                                <td className="border border-gray-300 px-4 py-2">Email@mail.email</td>
+                                <td className="border border-gray-300 px-4 py-2">Phone</td>
+                                <td className="border border-gray-300 px-4 py-2 text-center">
+                                    <button className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Make Admin</button>
+                                </td>
+                                <td className="border border-gray-300 px-4 py-2 text-center">
+                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Make User</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 {/* Invite Existing User to Agency */}
-                <div className="bg-white p-6 rounded shadow-md">
+                <div className="bg-white p-6 rounded col-span-2 2xl:col-span-1 shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">Invite Existing User to Agency</h2>
                     <form className="space-y-4">
                         <div>
@@ -66,7 +86,9 @@ const AgencyProfileContent = () => {
                             <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
                             <label className="text-gray-600">Agency Admin</label>
                         </div>
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Invite User</button>
+                        <div className="text-center">
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Invite User</button>
+                        </div>
                     </form>
                 </div>
 
