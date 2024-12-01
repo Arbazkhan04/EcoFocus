@@ -1,0 +1,57 @@
+when the company is promoted to agency
+company A ---> before promoting to agency
+company A --> Admins[kahn,abc]
+company A --> users[k,sdk]
+
+when it is promoted
+after promoting to agency
+company data will be the company data right. but if user or company is trying to invite anybody they can't 
+the user will be added to the agency. Company A cant invite or recive invite from other users.
+the invite will goes to agency
+
+
+second scanrio 
+if i create an company inside the agency or i request connection with the agency.
+But i can be promoted into the agency as well right?
+
+when i promoted to agency and is trying to add any user into my commpany they will keep the data separate.
+
+
+
+
+
+CONTRAINT RULE
+IF THE COMPANY IS CONNECTED WITH THE AGENCY OR UNDER THE AGENCY THE COMPANY CAN ONLY BE MANAGED BY THE AGENCY
+COMPANY WILL NO LONGER BE ABLE TO RECIVE NOTIFICATION OR CAN NOT ADD ANY PERSON INTO THE COMPANY IT CAN ONLY BE DONE
+BY AGENCY ADMIN OR AGENCY CONTACT PERSON. AND AGENCY WILL ASSIGN USER TO THE COMPANY. AND WE WILL PUSH THESE THING
+INTO THE AGENCY.
+IF THE AGENCY ASSIGN ANY USER INTO THE COMPANY THE USER WILL GOES INTO THE THE COMPANY AND WE WILL LINK WITH
+AGENCY SO IN THE WAY WE CAN EASILY DETERMINE THIS COMPANY IS UNDER THIS AGENCY AND HAS BEEN MANAGED BY THESE
+USERS AND ADMINS.
+
+
+
+
+
+
+1) company can not invite the agency for the conection see the screen shot.
+I am talking about the infomation page where company can request connection with the agency. Only it can be promoted into agency.
+2) If the company is created under the agency then this company can not be promoted into the agency
+
+1) Answer 
+Becuase when the company is created There are the possiblites it may contain some data already.
+we somehow need a connection bw company and agency.
+I think in this case what we can do is that we only link the company with the agency without touching the existing 
+company struture right.
+
+2) This can also be promoted into agency becuase see we are only linking the company to agency and we are not
+storing any kind of data in the agency. we are just linking.
+
+
+
+company can be connected with multiple agency? no agency can request connection with one company.
+
+
+
+
+
