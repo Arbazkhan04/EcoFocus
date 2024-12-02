@@ -8,7 +8,7 @@
       postalCode: { type: String, required: true },
       postalName: { type: String, required: true },
       contactEmail: { type: String, required: true },
-      setBaseYear: { type: Number, required: true },
+      setBaseYear: [{ type: Number, required: true }],
       createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       contactPerson: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

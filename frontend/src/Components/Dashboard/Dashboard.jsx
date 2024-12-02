@@ -6,6 +6,9 @@ import AgencyProfileContent from "./AgencyProfileContent";
 import Informasjon from "./Informasjon";
 import CreateNewClient from "./CreateNewClient";
 import NotificationModal from "./notificationModal";
+import { getCompanies, getCompany } from '../../apiManager/company'
+import { useSelector } from "react-redux";
+import ProtectedRoute from "../Common/protectedRoute";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -15,35 +18,125 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [isGrunnlagsdataOpen, setIsGrunnlagsdataOpen] = useState(false);
     const [clients, setClients] = useState([]);
-    const [years, setYears] = useState([]);
     const [filteredClients, setFilteredClients] = useState([]);
-    const [filteredYears, setFilteredYears] = useState([]);
     const [selectedClient, setSelectedClient] = useState("");
+    const [filteredYears, setFilteredYears] = useState([]); // 
     const [selectedYear, setSelectedYear] = useState("");
     const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
     const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-    // Simulate fetching notifications from an API
+    const [selectedClientObject, setSelectedClientObject] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const { userId, role } = useSelector((state) => state.auth.userInfo);
+
     useEffect(() => {
-        const fetchNotifications = async () => {
-            // Simulate an API call
-            const data = [
-                { id: 1, message: "You have a new message." },
-                { id: 5, message: "You have a new message." },
-                { id: 6, message: "You have a new message." },
-                { id: 8, message: "You have a new message." },
-                { id: 2, message: "Your request has been approved." },
-                { id: 3, message: "Your account was accessed from a new device." },
-            ];
-            setNotifications(data);
+        const fetchCompanies = async () => {
+            try {
+                const res = await getCompanies(userId);
+                if (res.data) {
+                    const clientData = res.data.map((company) => ({
+                        name: company.name,
+                        years: company.setBaseYear || [],
+                    }));
+                    setClients(clientData);
+                    setFilteredClients(clientData.map((client) => client.name));
+                }
+            } catch (error) {
+                console.error("Error fetching companies:", error.message);
+            }
         };
 
-        if (isNotificationOpen) {
-            fetchNotifications();
+        fetchCompanies();
+    }, [userId]);
+
+    const handleClientSearch = (e) => {
+        const searchValue = e.target.value.trim();
+        setSelectedClient(searchValue);
+
+        // Filter clients based on search value
+        const filteredClientsList = clients
+            .map((client) => client.name)
+            .filter((name) => name.toLowerCase().includes(searchValue.toLowerCase()));
+        setFilteredClients(filteredClientsList);
+
+        // Update filteredYears if a valid client is selected
+        const clientData = clients.find(
+            (client) => client.name.toLowerCase() === searchValue.toLowerCase()
+        );
+        setFilteredYears(clientData ? clientData.years : []);
+    };
+
+    const handleYearSearch = (e) => {
+        const searchValue = e.target.value.trim();
+        setSelectedYear(searchValue);
+
+        // Filter years based on search value
+        if (selectedClient) {
+            const clientData = clients.find(
+                (client) => client.name.toLowerCase() === selectedClient.toLowerCase()
+            );
+            const years = clientData ? clientData.years : [];
+            const filtered = years.filter((year) =>
+                year.toString().includes(searchValue)
+            );
+            setFilteredYears(filtered);
         }
-    }, [isNotificationOpen]);
+    };
+
+   // get compnay data based on the selected client and year
+    useEffect(() => {
+        // check the selected client and year exist in the setClients
+        if (!selectedClient || !selectedYear) {
+            return;
+        }
+
+        const clientExists = clients.some(
+            (client) => client.name.toLowerCase() === selectedClient.toLowerCase()
+        );
+
+        if (!clientExists) {
+            // setError("Selected client does not exist");
+            return;
+        }
+
+        const yearExists = clients
+            .find((client) => client.name.toLowerCase() === selectedClient.toLowerCase())
+            ?.years.includes(parseInt(selectedYear));
+
+        if (!yearExists) {
+            // setError("Selected year does not exist for the selected client");
+            return;
+        }
+
+            
+            
+         
+        const fetchCompanyData = async () => {
+                setLoading(true);
+                try {
+                    const res = await getCompany(selectedClient, selectedYear,userId);
+                    if (!res.data) {
+                        setError(res.message || "No data found for the selected client and year");
+                        return;
+                    }
+                    console.log(res.data);
+                    setSelectedClientObject(res.data);
+                    console.log(selectedClientObject);
+                } catch (error) {
+                    setError(error.message);
+                }finally{
+                    setLoading(false);
+                }
+        };
+
+        fetchCompanyData();
+    }, [selectedClient, selectedYear]);
+
+
 
     const handleAccept = (id) => {
         console.log(`Accepted notification with ID: ${id}`);
@@ -56,40 +149,6 @@ const Dashboard = () => {
     };
 
 
-    // Simulate fetching data from an API
-    useEffect(() => {
-        const fetchClientsAndYears = async () => {
-            const clientData = ["RavenWood", "ThornField", "GreenVale", "PineHill"]; // Replace with API call
-            const yearData = ["2024", "2023", "2022", "2021"]; // Replace with API call
-
-            setClients(clientData);
-            setYears(yearData);
-            setFilteredClients(clientData);
-            setFilteredYears(yearData);
-        };
-
-        fetchClientsAndYears();
-    }, []);
-
-    // Handle client search
-    const handleClientSearch = (e) => {
-        const searchValue = e.target.value;
-        setSelectedClient(searchValue);
-        const filtered = clients.filter((client) =>
-            client.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        setFilteredClients(filtered);
-    };
-
-    // Handle year search
-    const handleYearSearch = (e) => {
-        const searchValue = e.target.value;
-        setSelectedYear(searchValue);
-        const filtered = years.filter((year) =>
-            year.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        setFilteredYears(filtered);
-    };
 
     // Function to handle sidebar toggle
     const toggleSidebar = () => {
@@ -113,36 +172,36 @@ const Dashboard = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // Generate breadcrumbs
-    const generateBreadcrumbs = () => {
-        const pathnames = location.pathname.split("/").filter((x) => x);
+    // // Generate breadcrumbs
+    // const generateBreadcrumbs = () => {
+    //     const pathnames = location.pathname.split("/").filter((x) => x);
 
-        // Avoid displaying "Dashboard" twice
-        const filteredPathnames = pathnames.filter((path, index) => !(path === "dashboard" && index !== 0));
+    //     // Avoid displaying "Dashboard" twice
+    //     const filteredPathnames = pathnames.filter((path, index) => !(path === "dashboard" && index !== 0));
 
-        return (
-            <div className="text-sm text-blue-500 font-semibold flex items-center space-x-2">
-                {filteredPathnames.map((value, index) => {
-                    const to = `/${filteredPathnames.slice(0, index + 1).join("/")}`;
-                    const isLast = index === filteredPathnames.length - 1;
-                    return (
-                        <span key={to} className="flex items-center">
-                            {index > 0 && <span className="text-gray-400 mx-2">/</span>}
-                            {isLast ? (
-                                <span className="text-gray-800">
-                                    {value.charAt(0).toUpperCase() + value.slice(1)}
-                                </span>
-                            ) : (
-                                <Link to={to} className="hover:underline">
-                                    {value.charAt(0).toUpperCase() + value.slice(1)}
-                                </Link>
-                            )}
-                        </span>
-                    );
-                })}
-            </div>
-        );
-    };
+    //     return (
+    //         <div className="text-sm text-blue-500 font-semibold flex items-center space-x-2">
+    //             {filteredPathnames.map((value, index) => {
+    //                 const to = `/${filteredPathnames.slice(0, index + 1).join("/")}`;
+    //                 const isLast = index === filteredPathnames.length - 1;
+    //                 return (
+    //                     <span key={to} className="flex items-center">
+    //                         {index > 0 && <span className="text-gray-400 mx-2">/</span>}
+    //                         {isLast ? (
+    //                             <span className="text-gray-800">
+    //                                 {value.charAt(0).toUpperCase() + value.slice(1)}
+    //                             </span>
+    //                         ) : (
+    //                             <Link to={to} className="hover:underline">
+    //                                 {value.charAt(0).toUpperCase() + value.slice(1)}
+    //                             </Link>
+    //                         )}
+    //                     </span>
+    //                 );
+    //             })}
+    //         </div>
+    //     );
+    // };
 
     const topNavigationLinks = [
         { label: "Dashboard", icon: "ri-dashboard-line", path: "/dashboard" },
@@ -159,6 +218,7 @@ const Dashboard = () => {
         { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
     ];
 
+    
     const bottomNavigationLinks = [
         { label: "Agency Profile", icon: "ri-user-line", path: "/dashboard/agency-profile" },
         { label: "User Profile", icon: "ri-user-2-line", path: "/dashboard/user-profile" },
@@ -166,6 +226,11 @@ const Dashboard = () => {
         { label: "AdminPanel", icon: "ri-shield-user-line", path: "/dashboard/admin-panel" },
         { label: "Logg av", icon: "ri-logout-circle-line", path: "/dashboard/logout", color: "text-red-600 hover:text-red-800" },
     ];
+
+
+
+    if (loading) return <div>Loading...</div>
+    if (error) return <div>Error: {error}</div>
 
     return (
         <div className="min-h-screen flex bg-gray-100">
@@ -268,11 +333,11 @@ const Dashboard = () => {
                 {/* Header */}
                 <header className="w-full bg-white shadow p-4 flex justify-between items-center">
                     {/* Breadcrumbs */}
-                    <div className="flex items-center text-sm text-blue-500 font-semibold">
+                    {/* <div className="flex items-center text-sm text-blue-500 font-semibold">
                         <div className="flex items-center space-x-2">
                             {generateBreadcrumbs()}
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Header Controls */}
                     <div className="flex items-center space-x-4">
@@ -299,73 +364,77 @@ const Dashboard = () => {
 
                             {/* Client Dropdown */}
                             <div className="relative">
-
-                                <div className="relative">
-                                    <input
-                                        id="client"
-                                        type="text"
-                                        value={selectedClient}
-                                        onChange={handleClientSearch}
-                                        onFocus={() => setIsClientDropdownOpen(true)} // Open dropdown on focus
-                                        onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)} // Close dropdown on blur
-                                        className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Search Client"
-                                    />
-                                    <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                                    {isClientDropdownOpen && (
-                                        <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
-                                            {filteredClients.map((client, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
-                                                    onClick={() => {
-                                                        setSelectedClient(client);
-                                                        setFilteredClients(clients); // Reset dropdown
-                                                        setIsClientDropdownOpen(false); // Close dropdown
-                                                    }}
-                                                >
-                                                    {client}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                <input
+                                    id="client"
+                                    type="text"
+                                    value={selectedClient}
+                                    onChange={handleClientSearch}
+                                    onFocus={() => setIsClientDropdownOpen(true)}
+                                    onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)}
+                                    className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search Client"
+                                />
+                                <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                {isClientDropdownOpen && (
+                                    <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
+                                        {filteredClients.map((client, index) => (
+                                            <div
+                                                key={index}
+                                                className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                                                onClick={() => {
+                                                    setSelectedClient(client);
+                                                    const selectedClientData = clients.find(
+                                                        (c) => c.name === client
+                                                    );
+                                                    setFilteredYears(selectedClientData?.years || []);
+                                                    setFilteredClients(clients.map((c) => c.name)); // Reset dropdown
+                                                    setIsClientDropdownOpen(false);
+                                                }}
+                                            >
+                                                {client}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
+
 
                             {/* Year Dropdown */}
                             <div className="relative">
-
-                                <div className="relative">
-                                    <input
-                                        id="year"
-                                        type="text"
-                                        value={selectedYear}
-                                        onChange={handleYearSearch}
-                                        onFocus={() => setIsYearDropdownOpen(true)} // Open dropdown on focus
-                                        onBlur={() => setTimeout(() => setIsYearDropdownOpen(false), 200)} // Close dropdown on blur
-                                        className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Search Year"
-                                    />
-                                    <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                                    {isYearDropdownOpen && (
-                                        <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
-                                            {filteredYears.map((year, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
-                                                    onClick={() => {
-                                                        setSelectedYear(year);
-                                                        setFilteredYears(years); // Reset dropdown
-                                                        setIsYearDropdownOpen(false); // Close dropdown
-                                                    }}
-                                                >
-                                                    {year}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                <input
+                                    id="year"
+                                    type="text"
+                                    value={selectedYear}
+                                    onChange={handleYearSearch}
+                                    onFocus={() => setIsYearDropdownOpen(true)}
+                                    onBlur={(e) => {
+                                        if (!e.relatedTarget || !e.relatedTarget.classList.contains('dropdown-item')) {
+                                            setTimeout(() => setIsYearDropdownOpen(false), 200);
+                                        }
+                                    }}
+                                    className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search Year"
+                                />
+                                <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                {isYearDropdownOpen && (
+                                    <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
+                                        {filteredYears.map((year, index) => (
+                                            <div
+                                                key={index}
+                                                className="dropdown-item px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                                                onClick={() => {
+                                                    setSelectedYear(year);
+                                                    setIsYearDropdownOpen(false);
+                                                }}
+                                            >
+                                                {year}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
+
+
 
                         </div>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => navigate("/dashboard/create-new-client")}>
@@ -425,15 +494,15 @@ const Dashboard = () => {
                 <main className="p-6">
                     <Routes>
                         <Route path="/dashboard" element={<DashboardHomePage />} />
-                        <Route path="/user-profile" element={<UserProfileContent />} />
+                        <Route path="/user-profile" element={<ProtectedRoute hasAccess={role ==='user'? true:false}><UserProfileContent /></ProtectedRoute>} />
                         <Route path="/agency-profile" element={<AgencyProfileContent />} />
-                        <Route path="/informasjon" element={<Informasjon />} />
+                        <Route path="/informasjon" element={<ProtectedRoute hasAccess={selectedClientObject.isAgency}><Informasjon /></ProtectedRoute>} /> 
                         <Route path="/create-new-client" element={<CreateNewClient />} />
                         <Route path="/importer" element={<div>Importer Page</div>} />
                         <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
                         <Route path="/rapporter" element={<div>Rapporter Page</div>} />
-                        <Route path="/mod-panel" element={<div>ModPanel Page</div>} />
-                        <Route path="/admin-panel" element={<div>AdminPanel Page</div>} />
+                        <Route path="/mod-panel" element={<ProtectedRoute hasAccess={(role==='super-admin' || role === 'mod') ? true:false} ><div>ModPanel Page</div></ProtectedRoute>} />
+                        <Route path="/admin-panel" element={<ProtectedRoute hasAccess={role==='super-admin'? true:false}><div>AdminPanel Page</div></ProtectedRoute>} />
                         <Route path="/logout" element={<div>Logout Page</div>} />
                         <Route path="/" element={<DashboardHomePage />} />
                     </Routes>
@@ -444,3 +513,7 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+
+
