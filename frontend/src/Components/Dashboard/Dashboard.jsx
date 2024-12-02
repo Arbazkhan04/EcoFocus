@@ -32,10 +32,8 @@ const Dashboard = () => {
             const data = [
                 { id: 1, message: "You have a new message." },
                 { id: 5, message: "You have a new message." },
-
                 { id: 6, message: "You have a new message." },
                 { id: 8, message: "You have a new message." },
-
                 { id: 2, message: "Your request has been approved." },
                 { id: 3, message: "Your account was accessed from a new device." },
             ];
@@ -101,7 +99,7 @@ const Dashboard = () => {
     // Check for screen size and adjust sidebar behavior
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth <= 1024) {
+            if (window.innerWidth <= 1500) {
                 setIsSmallScreen(true);
                 setIsSidebarCollapsed(true); // Automatically collapse sidebar on small screens
             } else {
@@ -288,15 +286,15 @@ const Dashboard = () => {
                             {/* Notification Dropdown */}
                             {isNotificationOpen && (
                                 <NotificationModal
-                                isOpen={isNotificationOpen}
-                                onClose={() => setIsNotificationOpen(false)}
-                                notifications={notifications}
-                                handleAccept={handleAccept}
-                                handleDecline={handleDecline}
-                            />
+                                    isOpen={isNotificationOpen}
+                                    onClose={() => setIsNotificationOpen(false)}
+                                    notifications={notifications}
+                                    handleAccept={handleAccept}
+                                    handleDecline={handleDecline}
+                                />
                             )}
                         </div>
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Synkroniser Data</button>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Synkroniser</button>
                         <div className="flex items-center space-x-4">
 
                             {/* Client Dropdown */}
@@ -311,7 +309,7 @@ const Dashboard = () => {
                                         onFocus={() => setIsClientDropdownOpen(true)} // Open dropdown on focus
                                         onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)} // Close dropdown on blur
                                         className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Search or select a client"
+                                        placeholder="Search Client"
                                     />
                                     <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                                     {isClientDropdownOpen && (
@@ -346,7 +344,7 @@ const Dashboard = () => {
                                         onFocus={() => setIsYearDropdownOpen(true)} // Open dropdown on focus
                                         onBlur={() => setTimeout(() => setIsYearDropdownOpen(false), 200)} // Close dropdown on blur
                                         className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Search or select a year"
+                                        placeholder="Search Year"
                                     />
                                     <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                                     {isYearDropdownOpen && (
