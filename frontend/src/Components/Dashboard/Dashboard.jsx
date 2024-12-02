@@ -5,6 +5,7 @@ import UserProfileContent from "./UserProfileContent"; // User Profile content
 import AgencyProfileContent from "./AgencyProfileContent";
 import Informasjon from "./Informasjon";
 import CreateNewClient from "./CreateNewClient";
+import NotificationModal from "./notificationModal";
 
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -30,6 +31,11 @@ const Dashboard = () => {
             // Simulate an API call
             const data = [
                 { id: 1, message: "You have a new message." },
+                { id: 5, message: "You have a new message." },
+
+                { id: 6, message: "You have a new message." },
+                { id: 8, message: "You have a new message." },
+
                 { id: 2, message: "Your request has been approved." },
                 { id: 3, message: "Your account was accessed from a new device." },
             ];
@@ -281,41 +287,13 @@ const Dashboard = () => {
 
                             {/* Notification Dropdown */}
                             {isNotificationOpen && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                                    <div className="p-4">
-                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                                            Notifications
-                                        </h3>
-                                        {notifications.length === 0 ? (
-                                            <p className="text-gray-500">No new notifications.</p>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                {notifications.map((notification) => (
-                                                    <div
-                                                        key={notification.id}
-                                                        className="border-b border-gray-200 pb-2"
-                                                    >
-                                                        <p className="text-gray-700">{notification.message}</p>
-                                                        <div className="flex space-x-4 mt-2">
-                                                            <button
-                                                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                                                                onClick={() => handleAccept(notification.id)}
-                                                            >
-                                                                Accept
-                                                            </button>
-                                                            <button
-                                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                                                onClick={() => handleDecline(notification.id)}
-                                                            >
-                                                                Decline
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                <NotificationModal
+                                isOpen={isNotificationOpen}
+                                onClose={() => setIsNotificationOpen(false)}
+                                notifications={notifications}
+                                handleAccept={handleAccept}
+                                handleDecline={handleDecline}
+                            />
                             )}
                         </div>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Synkroniser Data</button>

@@ -1,7 +1,97 @@
 import { useState } from "react";
+import { createCompany } from "../../apiManager/company" // Import the API method
+import { useSelector } from "react-redux";
 
 const CreateNewClient = () => {
-    const [selectedSource, setSelectedSource] = useState("");
+    const [formData, setFormData] = useState({
+        name: "",
+        registrationNumber: "",
+        address: "",
+        postNo: "",
+        postalName: "",
+        contactEmail: "",
+        baseYear: "",
+        source: "",
+        apiKey: "",
+        username: "",
+        password: ""
+    });
+    const [errors, setErrors] = useState({});
+
+    // Get the user ID from the Redux store
+    const userId = useSelector((state) => state.auth.userInfo.userId);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const validateForm = () => {
+        let newErrors = {};
+
+        // General fields validation
+        if (!formData.name) newErrors.name = "Name is required";
+        if (!formData.registrationNumber) newErrors.registrationNumber = "Registration number is required";
+        if (!formData.address) newErrors.address = "Address is required";
+        if (!formData.postNo) newErrors.postNo = "Post number is required";
+        if (!formData.postalName) newErrors.postalName = "Postal name is required";
+        if (!formData.contactEmail) {
+            newErrors.contactEmail = "Contact email is required";
+        } else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) {
+            newErrors.contactEmail = "Enter a valid email address";
+        }
+        if (!formData.baseYear) {
+            newErrors.baseYear = "Base year is required";
+        } else if (!/^\d{4}$/.test(formData.baseYear)) {
+            newErrors.baseYear = "Base year must be a 4-digit number";
+        }
+
+        // Import source validation
+        if (!formData.source) newErrors.source = "Import source is required";
+
+        if (formData.source === "Tripletex(pågående aktiv)" || formData.source === "PowerOffice Go") {
+            if (!formData.apiKey) newErrors.apiKey = "API Key is required for this source";
+        }
+
+        if (formData.source === "24SevenOffice(pågående aktiv)") {
+            if (!formData.username) newErrors.username = "Username is required";
+            if (!formData.password) newErrors.password = "Password is required";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        const companyData = {
+            name: formData.name,
+            registrationNumber: formData.registrationNumber,
+            source: formData.source,
+            apiKey: formData.apiKey,
+            username: formData.username,
+            password: formData.password,
+            address: formData.address,
+            postalCode: formData.postNo,
+            postalName: formData.postalName,
+            contactEmail: formData.contactEmail,
+            setBaseYear: formData.baseYear,
+            userId 
+        };
+
+        try {
+            const response = await createCompany(companyData);
+            if (response.data) {
+                alert("Company created successfully!");
+            } else {
+                alert(response.message || "Company creation failed.");
+            }
+        } catch (error) {
+            alert(error.message || "An error occurred.");
+        }
+    };
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
@@ -10,29 +100,37 @@ const CreateNewClient = () => {
             </h1>
 
             <div className="bg-white p-6 rounded shadow-md max-w-6xl mx-auto">
-                <form className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Company Information Section */}
                     <div>
                         <h2 className="text-lg font-bold text-blue-500 mb-4">
                             Company Information
                         </h2>
                         {[
-                            "Name",
-                            "Reg Number",
-                            "Address",
-                            "Post no.",
-                            "Postal Name",
-                            "Contact Email",
-                            "Set Base Year",
-                        ].map((label) => (
-                            <div key={label}>
+                            { label: "Name", name: "name" },
+                            { label: "Reg Number", name: "registrationNumber" },
+                            { label: "Address", name: "address" },
+                            { label: "Post no.", name: "postNo" },
+                            { label: "Postal Name", name: "postalName" },
+                            { label: "Contact Email", name: "contactEmail" },
+                            { label: "Set Base Year", name: "baseYear" },
+                        ].map(({ label, name }) => (
+                            <div key={name}>
                                 <label className="block text-gray-600 mb-1">
                                     {label}
                                 </label>
                                 <input
                                     type="text"
-                                    className="w-full border border-gray-300 rounded px-3 py-2"
+                                    name={name}
+                                    value={formData[name]}
+                                    onChange={handleChange}
+                                    className={`w-full border ${
+                                        errors[name] ? "border-red-500" : "border-gray-300"
+                                    } rounded px-3 py-2`}
                                 />
+                                {errors[name] && (
+                                    <p className="text-red-500 text-sm mt-1">{errors[name]}</p>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -53,11 +151,9 @@ const CreateNewClient = () => {
                                     <input
                                         type="radio"
                                         id={label}
-                                        name="import-source"
+                                        name="source"
                                         value={label}
-                                        onChange={(e) =>
-                                            setSelectedSource(e.target.value)
-                                        }
+                                        onChange={handleChange}
                                         className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                                     />
                                     <label
@@ -70,77 +166,78 @@ const CreateNewClient = () => {
                             ))}
 
                             {/* Conditional Fields */}
-                            {selectedSource ===
-                                "Tripletex(pågående aktiv)" && (
-                                    <div className="mt-4">
-                                        <label
-                                            htmlFor="api-key"
-                                            className="block text-gray-700 mb-2 text-sm"
-                                        >
-                                            Legg inn API-brukernøkkel for
-                                            autentisering:
-                                        </label>
-                                        <input
-                                            id="api-key"
-                                            type="text"
-                                            placeholder="Skriv inn API-nøkkel"
-                                            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                )}
-
-                            {selectedSource === "PowerOffice Go" && (
+                            {formData.source === "Tripletex(pågående aktiv)" ||
+                            formData.source === "PowerOffice Go" ? (
                                 <div className="mt-4">
                                     <label
-                                        htmlFor="api-key"
+                                        htmlFor="apiKey"
                                         className="block text-gray-700 mb-2 text-sm"
                                     >
-                                        Legg inn API-brukernøkkel for
-                                        autentisering:
+                                        API Key:
                                     </label>
                                     <input
-                                        id="api-key"
+                                        id="apiKey"
                                         type="text"
-                                        placeholder="Skriv inn API-nøkkel"
-                                        className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                                        name="apiKey"
+                                        value={formData.apiKey}
+                                        onChange={handleChange}
+                                        className={`w-full border ${
+                                            errors.apiKey ? "border-red-500" : "border-gray-300"
+                                        } rounded px-3 py-2`}
                                     />
+                                    {errors.apiKey && (
+                                        <p className="text-red-500 text-sm mt-1">{errors.apiKey}</p>
+                                    )}
+                                </div>
+                            ) : null}
+
+                            {formData.source === "24SevenOffice(pågående aktiv)" && (
+                                <div className="mt-4">
+                                    <label
+                                        htmlFor="username"
+                                        className="block text-gray-700 mb-2 text-sm"
+                                    >
+                                        Username:
+                                    </label>
+                                    <input
+                                        id="username"
+                                        type="text"
+                                        name="username"
+                                        value={formData.username}
+                                        onChange={handleChange}
+                                        className={`w-full border ${
+                                            errors.username ? "border-red-500" : "border-gray-300"
+                                        } rounded px-3 py-2`}
+                                    />
+                                    {errors.username && (
+                                        <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+                                    )}
+
+                                    <label
+                                        htmlFor="password"
+                                        className="block text-gray-700 mt-4 mb-2 text-sm"
+                                    >
+                                        Password:
+                                    </label>
+                                    <input
+                                        id="password"
+                                        type="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className={`w-full border ${
+                                            errors.password ? "border-red-500" : "border-gray-300"
+                                        } rounded px-3 py-2`}
+                                    />
+                                    {errors.password && (
+                                        <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                                    )}
                                 </div>
                             )}
 
-                            {selectedSource ===
-                                "24SevenOffice(pågående aktiv)" && (
-                                    <div className="mt-4">
-                                        <label
-                                            htmlFor="username"
-                                            className="block text-gray-700 mb-2 text-sm"
-                                        >
-                                            Brukernavn:
-                                        </label>
-                                        <input
-                                            id="username"
-                                            type="text"
-                                            placeholder="Skriv inn brukernavn"
-                                            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                        <label
-                                            htmlFor="password"
-                                            className="block text-gray-700 mt-4 mb-2 text-sm"
-                                        >
-                                            Passord:
-                                        </label>
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            placeholder="Skriv inn passord"
-                                            className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                )}
-
-                            {selectedSource === "SAF-T-fil" && (
+                            {formData.source === "SAF-T-fil" && (
                                 <p className="text-sm text-gray-500 mt-2 text-center">
-                                    Se instruksjoner under hjelp for hvordan
-                                    opprette API nøkler.
+                                    No additional fields required for SAF-T.
                                 </p>
                             )}
                         </div>

@@ -1,7 +1,6 @@
 const User = require('../modals/userManagementModal');
 const sendEmail = require("../utils/sendEmail.js");
 const Agency = require('../modals/agencyManagementModal');
-const mongoose = require('mongoose'); // Ensure mongoose is imported
 const crypto = require('crypto');
 
 const createUser = async (req, res) => {
@@ -55,6 +54,8 @@ const createUser = async (req, res) => {
 
         res.status(200).json({
             message:'registration successful',
+            userId: user._id,
+            role: user.userRole,
             email: user.email,
             isEmailVerified: user.isEmailVerified,
             data:true
@@ -124,6 +125,8 @@ const login = async (req, res) => {
             });
             // do not send token
             return res.status(200).json({
+              userId: user._id,
+            role: user.userRole,
                 message:'Email not verified, verification code sent to your email',
                 data:true,
                 email: user.email,
@@ -133,6 +136,8 @@ const login = async (req, res) => {
         //send jwt token if verified
         const token = user.createJWT();
         res.status(200).json({
+          userId: user._id,
+          role: user.userRole,
             message:'login successful',
             email: user.email,
             isEmailVerified: user.isEmailVerified,
@@ -245,7 +250,8 @@ const forgotPassword = async (req, res, next) => {
   
       res
         .status(200)
-        .json({ data: true, message: "Password reset successful", email: user.email, isEmailVerified: user.isEmailVerified, token: user.createJWT() });
+        .json({ data: true, userId: user._id,
+          role: user.userRole, message: "Password reset successful", email: user.email, isEmailVerified: user.isEmailVerified, token: user.createJWT() });
     } catch (err) {
       return res.status(200).json({ error: err.message, message: "Password reset failed", data: false });
     }
@@ -284,6 +290,8 @@ const forgotPassword = async (req, res, next) => {
         res.status(200).json({
             message: 'Email verified successfully!',
             email: user.email,
+            userId: user._id,
+                role: user.userRole,
             isEmailVerified: user.isEmailVerified,
             token: user.createJWT(), //create jwt token for the verified user
             data: true

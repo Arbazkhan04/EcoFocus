@@ -4,7 +4,7 @@ const User = require('../modals/userManagementModal');
 
 const createCompany = async (req, res) => {
     try {
-        const { name, source, apiKey, registrationNumber, username, password, userId } = req.body;
+        const { name, address, postalCode, postalName, contactEmail, setBaseYear, source, apiKey, registrationNumber, username, password, userId } = req.body;
 
         const user = await User.findById(userId);
         if (!user) return res.status(200).json({
@@ -13,22 +13,27 @@ const createCompany = async (req, res) => {
         });
 
         // Validate the source type
-        const validSources = ['Tripletex', 'PowerOfficeGo', '24SevenOffice', 'SAF-T'];
+        const validSources = ['Tripletex(pågående aktiv)', 'PowerOffice Go', '24SevenOffice(pågående aktiv)', 'SAF-T-fil'];
         if (!validSources.includes(source)) {
             return res.status(200).json({ message: 'Invalid import source', data: false });
         }
 
         // Validate required fields based on source
-        if ((source === 'Tripletex' || source === 'PowerOfficeGo') && !apiKey) {
+        if ((source === 'Tripletex(pågående aktiv)' || source === 'PowerOffice Go') && !apiKey) {
             return res.status(200).json({ message: 'API key is required', data: false });
         }
-        if (source === '24SevenOffice' && (!username || !password)) {
+        if (source === '24SevenOffice(pågående aktiv)' && (!username || !password)) {
             return res.status(200).json({ message: 'Username and password are required', data: false });
         }
 
         const company = new Company({
             name,
             registrationNumber,
+            address,
+            postalCode,
+            postalName,
+            contactEmail,
+            setBaseYear,
             createdBy: user._id,
             contactPerson: user._id,
             admins: [user._id]
@@ -36,9 +41,9 @@ const createCompany = async (req, res) => {
 
         company.importSource = {
             source,
-            apiKey: source === 'Tripletex' || source === 'PowerOfficeGo' ? apiKey : null,
-            username: source === '24SevenOffice' ? username : null,
-            password: source === '24SevenOffice' ? password : null
+            apiKey: source === 'Tripletex(pågående aktiv)' || source === 'PowerOffice Go' ? apiKey : null,
+            username: source === '24SevenOffice(pågående aktiv)' ? username : null,
+            password: source === '24SevenOffice(pågående aktiv)' ? password : null
         };
 
         await company.save();
