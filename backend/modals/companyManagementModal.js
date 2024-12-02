@@ -4,6 +4,11 @@
   const companySchema = new mongoose.Schema({
       name: { type: String, required: true },
       registrationNumber: { type: String, required: true, unique: true },
+      address: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      postalName: { type: String, required: true },
+      contactEmail: { type: String, required: true },
+      setBaseYear: { type: Number, required: true },
       createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       contactPerson: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -13,7 +18,7 @@
       importSource: {
         source: {
           type: String,
-          enum: ['Tripletex', 'PowerOfficeGo', '24SevenOffice', 'SAF-T'],
+          enum: ['Tripletex(pågående aktiv)', 'PowerOffice Go', '24SevenOffice(pågående aktiv)', 'SAF-T-fil'],
           required: true,
         },
         apiKey: { type: String, default: null },
