@@ -9,11 +9,83 @@ import CreateNewClient from "./CreateNewClient";
 const Dashboard = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const [isGrunnlagsdataOpen, setIsGrunnlagsdataOpen] = useState(false);
+    const [clients, setClients] = useState([]);
+    const [years, setYears] = useState([]);
+    const [filteredClients, setFilteredClients] = useState([]);
+    const [filteredYears, setFilteredYears] = useState([]);
+    const [selectedClient, setSelectedClient] = useState("");
+    const [selectedYear, setSelectedYear] = useState("");
+    const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+    const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
+    // Simulate fetching notifications from an API
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            // Simulate an API call
+            const data = [
+                { id: 1, message: "You have a new message." },
+                { id: 2, message: "Your request has been approved." },
+                { id: 3, message: "Your account was accessed from a new device." },
+            ];
+            setNotifications(data);
+        };
+
+        if (isNotificationOpen) {
+            fetchNotifications();
+        }
+    }, [isNotificationOpen]);
+
+    const handleAccept = (id) => {
+        console.log(`Accepted notification with ID: ${id}`);
+        // Add API call logic here if needed
+    };
+
+    const handleDecline = (id) => {
+        console.log(`Declined notification with ID: ${id}`);
+        // Add API call logic here if needed
+    };
+
+
+    // Simulate fetching data from an API
+    useEffect(() => {
+        const fetchClientsAndYears = async () => {
+            const clientData = ["RavenWood", "ThornField", "GreenVale", "PineHill"]; // Replace with API call
+            const yearData = ["2024", "2023", "2022", "2021"]; // Replace with API call
+
+            setClients(clientData);
+            setYears(yearData);
+            setFilteredClients(clientData);
+            setFilteredYears(yearData);
+        };
+
+        fetchClientsAndYears();
+    }, []);
+
+    // Handle client search
+    const handleClientSearch = (e) => {
+        const searchValue = e.target.value;
+        setSelectedClient(searchValue);
+        const filtered = clients.filter((client) =>
+            client.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredClients(filtered);
+    };
+
+    // Handle year search
+    const handleYearSearch = (e) => {
+        const searchValue = e.target.value;
+        setSelectedYear(searchValue);
+        const filtered = years.filter((year) =>
+            year.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredYears(filtered);
+    };
 
     // Function to handle sidebar toggle
     const toggleSidebar = () => {
@@ -200,17 +272,125 @@ const Dashboard = () => {
 
                     {/* Header Controls */}
                     <div className="flex items-center space-x-4">
-                        <i className="ri-notification-line text-2xl text-gray-500 cursor-pointer"></i>
+                        <div className="relative">
+                            {/* Notification Icon */}
+                            <i
+                                className="ri-notification-line text-2xl text-gray-500 cursor-pointer"
+                                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                            ></i>
+
+                            {/* Notification Dropdown */}
+                            {isNotificationOpen && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                                    <div className="p-4">
+                                        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                            Notifications
+                                        </h3>
+                                        {notifications.length === 0 ? (
+                                            <p className="text-gray-500">No new notifications.</p>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {notifications.map((notification) => (
+                                                    <div
+                                                        key={notification.id}
+                                                        className="border-b border-gray-200 pb-2"
+                                                    >
+                                                        <p className="text-gray-700">{notification.message}</p>
+                                                        <div className="flex space-x-4 mt-2">
+                                                            <button
+                                                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                                                                onClick={() => handleAccept(notification.id)}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                                                onClick={() => handleDecline(notification.id)}
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Synkroniser Data</button>
                         <div className="flex items-center space-x-4">
-                            <select className="border border-gray-300 rounded px-3 py-2 bg-white">
-                                <option value="ClientName">ClientName</option>
-                                <option value="Client1">Client1</option>
-                            </select>
-                            <select className="border border-gray-300 rounded px-3 py-2 bg-white">
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                            </select>
+
+                            {/* Client Dropdown */}
+                            <div className="relative">
+
+                                <div className="relative">
+                                    <input
+                                        id="client"
+                                        type="text"
+                                        value={selectedClient}
+                                        onChange={handleClientSearch}
+                                        onFocus={() => setIsClientDropdownOpen(true)} // Open dropdown on focus
+                                        onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)} // Close dropdown on blur
+                                        className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Search or select a client"
+                                    />
+                                    <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                    {isClientDropdownOpen && (
+                                        <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
+                                            {filteredClients.map((client, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        setSelectedClient(client);
+                                                        setFilteredClients(clients); // Reset dropdown
+                                                        setIsClientDropdownOpen(false); // Close dropdown
+                                                    }}
+                                                >
+                                                    {client}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Year Dropdown */}
+                            <div className="relative">
+
+                                <div className="relative">
+                                    <input
+                                        id="year"
+                                        type="text"
+                                        value={selectedYear}
+                                        onChange={handleYearSearch}
+                                        onFocus={() => setIsYearDropdownOpen(true)} // Open dropdown on focus
+                                        onBlur={() => setTimeout(() => setIsYearDropdownOpen(false), 200)} // Close dropdown on blur
+                                        className="appearance-none border border-gray-300 rounded px-3 py-2 bg-white w-full text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Search or select a year"
+                                    />
+                                    <i className="ri-arrow-down-s-fill absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                    {isYearDropdownOpen && (
+                                        <div className="absolute left-0 right-0 border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto z-10">
+                                            {filteredYears.map((year, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        setSelectedYear(year);
+                                                        setFilteredYears(years); // Reset dropdown
+                                                        setIsYearDropdownOpen(false); // Close dropdown
+                                                    }}
+                                                >
+                                                    {year}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                         </div>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => navigate("/dashboard/create-new-client")}>
                             Opprett ny Klient
