@@ -33,7 +33,7 @@ const createCompany = async (req, res) => {
             postalCode,
             postalName,
             contactEmail,
-            setBaseYear,
+            setBaseYear, // this is array of numbers
             createdBy: user._id,
             contactPerson: user._id,
             admins: [user._id]
@@ -62,10 +62,90 @@ const createCompany = async (req, res) => {
     }
 }
 
+const getCompanies = async (req, res) => {
+   try {
+    const { userId } = req.query;
+    console.log(userId);
+    const user = await User.findById(userId);
 
+    if(!user) return res.status(200).json({
+        message: 'User not found',
+        data: false
+    });
+
+    const companies = await Company.find({ createdBy: userId });
+    
+    // only return client name and and year.
+    const companyData = companies.map(company => {
+        return {
+            name: company.name,
+            setBaseYear: company.setBaseYear
+        }
+    });
+    res.status(200).json({
+        message: 'Companies fetched successfully',
+        data: companyData,
+    });
+   }catch(err){
+    res.status(200).json({
+        error: err.message,
+        data: false,
+        message: "companies not fetched"
+
+    });
+   }
+}
+
+
+const getCompanyData = async (req, res) => {
+    try {
+        const { userId, clientName, baseYear } = req.query;
+        const user = await User.findById(userId);
+        if (!user) return res.status(200).json({
+            message: 'User not found',
+            data: false
+        });
+
+        const company = await Company.findOne({ createdBy: userId, name: clientName });
+        if (!company) return res.status(200).json({
+            message: 'Company not found',
+            data: false
+        });
+
+        // destructuring the company object
+        const newCompany = {
+            _id: company._id,
+            name: company.name,
+            registrationNumber: company.registrationNumber,
+            setBaseYear: company.setBaseYear,
+            contactPerson: company.contactPerson === userId, // if contact Person is same as user then this is supper admin
+            admin: company.admins.includes(userId), // if user is in admin list then this is admin
+            user: company.users.includes(userId), // if user is in user list then this is user
+            isAgency: company.isAgency,
+            agencyId: company.agencyId,
+        };
+
+
+        res.status(200).json({
+            message: 'Company data fetched successfully',
+            data: newCompany,
+        });
+
+    }
+    catch (err) {
+        res.status(200).json({
+            error: err.message,
+            data: false,
+            message: "company data not fetched"
+
+        });
+    }
+}
 
 
 
 module.exports = {
     createCompany,
+    getCompanies,
+    getCompanyData
 };

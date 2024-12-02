@@ -10,7 +10,7 @@ const CreateNewClient = () => {
         postNo: "",
         postalName: "",
         contactEmail: "",
-        baseYear: "",
+        baseYear: [], // Change from a single value to an array
         source: "",
         apiKey: "",
         username: "",
@@ -23,7 +23,12 @@ const CreateNewClient = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === "baseYear") {
+            // Ensure the value is stored as an array
+            setFormData({ ...formData, [name]: [value] });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const validateForm = () => {
@@ -40,11 +45,10 @@ const CreateNewClient = () => {
         } else if (!/\S+@\S+\.\S+/.test(formData.contactEmail)) {
             newErrors.contactEmail = "Enter a valid email address";
         }
-        if (!formData.baseYear) {
-            newErrors.baseYear = "Base year is required";
-        } else if (!/^\d{4}$/.test(formData.baseYear)) {
-            newErrors.baseYear = "Base year must be a 4-digit number";
-        }
+        // Base Year Validation
+    if (!formData.baseYear.length || !/^\d{4}$/.test(formData.baseYear[0])) {
+        newErrors.baseYear = "Base year must be a valid 4-digit number";
+    }
 
         // Import source validation
         if (!formData.source) newErrors.source = "Import source is required";
