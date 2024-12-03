@@ -5,9 +5,9 @@ import SignupPage from './Pages/SignupPage';
 import DashboardPage from './Pages/DashboardPage';
 import EmailVerification from './Components/Auths/VerifyEmail';
 import ResetPassword from './Components/Auths/ResetPassword';
-import ProtectedRoute from './Components/Common/protectedRoute'; 
+import ProtectedRoute from './Components/Common/protectedRoute';
 import { useSelector } from 'react-redux';
-
+import Unauthorized from './Components/Common/Unauthorized';
 
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/verify-email" element={<EmailVerification />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
           {/* public routes end routes */}
 
           {/* protected routes */}
