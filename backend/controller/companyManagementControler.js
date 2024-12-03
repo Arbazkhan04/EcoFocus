@@ -119,7 +119,7 @@ const getCompanyData = async (req, res) => {
             registrationNumber: company.registrationNumber,
             setBaseYear: company.setBaseYear,
             contactPerson: company.contactPerson === userId, // if contact Person is same as user then this is supper admin
-            admin: company.admins.includes(userId), // if user is in admin list then this is admin
+            isCompanyAdmin: company.admins.includes(userId), // if user is in admin list then this is admin
             user: company.users.includes(userId), // if user is in user list then this is user
             isAgency: company.isAgency,
             agencyId: company.agencyId,
