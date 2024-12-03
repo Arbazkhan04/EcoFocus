@@ -7,10 +7,16 @@ import Informasjon from "./Informasjon";
 import CreateNewClient from "./CreateNewClient";
 import NotificationModal from "./notificationModal";
 import { getCompanies, getCompany } from '../../apiManager/company'
-import { useSelector } from "react-redux";
 import ProtectedRoute from "../Common/protectedRoute";
-
+import {  setCompanyInStore, clearSelectionsFromStore } from "../../slices/appStateSlice";
+import { useDispatch, useSelector } from "react-redux";
 const Dashboard = () => {
+
+    // state management
+    const dispatch = useDispatch();
+    const { company } = useSelector((state) => state.appState);
+
+
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -19,15 +25,14 @@ const Dashboard = () => {
     const [isGrunnlagsdataOpen, setIsGrunnlagsdataOpen] = useState(false);
     const [clients, setClients] = useState([]);
     const [filteredClients, setFilteredClients] = useState([]);
-    const [selectedClient, setSelectedClient] = useState("");
+    const [selectedClient, setSelectedClient] = useState(company?.name || "");
     const [filteredYears, setFilteredYears] = useState([]); // 
-    const [selectedYear, setSelectedYear] = useState("");
+    const [selectedYear, setSelectedYear] = useState(company?.setBaseYear || "");
     const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
     const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-    const [selectedClientObject, setSelectedClientObject] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -87,7 +92,7 @@ const Dashboard = () => {
         }
     };
 
-   // get compnay data based on the selected client and year
+    // get compnay data based on the selected client and year
     useEffect(() => {
         // check the selected client and year exist in the setClients
         if (!selectedClient || !selectedYear) {
@@ -112,25 +117,41 @@ const Dashboard = () => {
             return;
         }
 
-            
-            
-         
+
+
+
         const fetchCompanyData = async () => {
-                setLoading(true);
-                try {
-                    const res = await getCompany(selectedClient, selectedYear,userId);
-                    if (!res.data) {
-                        setError(res.message || "No data found for the selected client and year");
-                        return;
-                    }
-                    console.log(res.data);
-                    setSelectedClientObject(res.data);
-                    console.log(selectedClientObject);
-                } catch (error) {
-                    setError(error.message);
-                }finally{
-                    setLoading(false);
+            setLoading(true);
+            try {
+                const res = await getCompany(selectedClient, selectedYear, userId);
+                if (!res.data) {
+                    // clear the company data in the store as well if not data found
+                    dispatch(clearSelectionsFromStore());
+                    setError(res.message || "No data found for the selected client and year");
+                    return;
                 }
+                console.log(res.data);
+
+                // Extract only the fields you want to store
+                const companyDataToStore = {
+                    _id: res.data._id,
+                    name: res.data.name,
+                    registrationNumber: res.data.registrationNumber,
+                    isAgency: res.data.isAgency,
+                    isCompanyAdmin: res.data.isCompanyAdmin,
+                    setBaseYear: selectedYear, // store the selected year
+                    user: res.data.user,
+                    contactPerson: res.data.contactPerson,
+                    agencyId: res.data.agencyId,
+                };
+              
+                // only store the selected company data
+                dispatch(setCompanyInStore(companyDataToStore));
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchCompanyData();
@@ -171,6 +192,15 @@ const Dashboard = () => {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+
+    const clearCompanyData = () => {
+        dispatch(clearSelectionsFromStore());
+        setSelectedClient("");
+        setSelectedYear("");
+        setFilteredYears([]);
+        setFilteredClients(clients);
+    }
 
     // // Generate breadcrumbs
     // const generateBreadcrumbs = () => {
@@ -218,15 +248,26 @@ const Dashboard = () => {
         { label: "Rapporter", icon: "ri-file-chart-line", path: "/dashboard/rapporter" },
     ];
 
-    
+
+    // const bottomNavigationLinks = [
+    //     { label: "Agency Profile", icon: "ri-user-line", path: "/dashboard/agency-profile" },
+    //     { label: "User Profile", icon: "ri-user-2-line", path: "/dashboard/user-profile" },
+    //     { label: "ModPanel", icon: "ri-settings-2-line", path: "/dashboard/mod-panel" },
+    //     { label: "AdminPanel", icon: "ri-shield-user-line", path: "/dashboard/admin-panel" },
+    //     { label: "Logg av", icon: "ri-logout-circle-line", path: "/dashboard/logout", color: "text-red-600 hover:text-red-800" },
+    // ];
+
     const bottomNavigationLinks = [
         { label: "Agency Profile", icon: "ri-user-line", path: "/dashboard/agency-profile" },
         { label: "User Profile", icon: "ri-user-2-line", path: "/dashboard/user-profile" },
-        { label: "ModPanel", icon: "ri-settings-2-line", path: "/dashboard/mod-panel" },
-        { label: "AdminPanel", icon: "ri-shield-user-line", path: "/dashboard/admin-panel" },
+        ...(role === "super-admin" || role === "mod"
+            ? [{ label: "ModPanel", icon: "ri-settings-2-line", path: "/dashboard/mod-panel" }]
+            : []),
+        ...(role === "super-admin"
+            ? [{ label: "AdminPanel", icon: "ri-shield-user-line", path: "/dashboard/admin-panel" }]
+            : []),
         { label: "Logg av", icon: "ri-logout-circle-line", path: "/dashboard/logout", color: "text-red-600 hover:text-red-800" },
     ];
-
 
 
     if (loading) return <div>Loading...</div>
@@ -437,6 +478,9 @@ const Dashboard = () => {
 
 
                         </div>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={clearCompanyData}>
+                            Clear
+                        </button>
                         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => navigate("/dashboard/create-new-client")}>
                             Opprett ny Klient
                         </button>
@@ -494,15 +538,15 @@ const Dashboard = () => {
                 <main className="p-6">
                     <Routes>
                         <Route path="/dashboard" element={<DashboardHomePage />} />
-                        <Route path="/user-profile" element={<ProtectedRoute hasAccess={role ==='user'? true:false}><UserProfileContent /></ProtectedRoute>} />
-                        <Route path="/agency-profile" element={<AgencyProfileContent />} />
-                        <Route path="/informasjon" element={<ProtectedRoute hasAccess={selectedClientObject.isAgency}><Informasjon /></ProtectedRoute>} /> 
+                        <Route path="/user-profile" element={<ProtectedRoute hasAccess={role === 'user' ? true : false}><UserProfileContent /></ProtectedRoute>} />
+                        <Route path="/agency-profile" element={<ProtectedRoute hasAccess={company?.isAgency}><AgencyProfileContent /></ProtectedRoute>} />
+                        <Route path="/informasjon" element={<ProtectedRoute hasAccess={company?.isCompanyAdmin}><Informasjon /></ProtectedRoute>} />
                         <Route path="/create-new-client" element={<CreateNewClient />} />
                         <Route path="/importer" element={<div>Importer Page</div>} />
                         <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />
                         <Route path="/rapporter" element={<div>Rapporter Page</div>} />
-                        <Route path="/mod-panel" element={<ProtectedRoute hasAccess={(role==='super-admin' || role === 'mod') ? true:false} ><div>ModPanel Page</div></ProtectedRoute>} />
-                        <Route path="/admin-panel" element={<ProtectedRoute hasAccess={role==='super-admin'? true:false}><div>AdminPanel Page</div></ProtectedRoute>} />
+                        <Route path="/mod-panel" element={<ProtectedRoute hasAccess={(role === 'super-admin' || role === 'mod') ? true : false} ><div>ModPanel Page</div></ProtectedRoute>} />
+                        <Route path="/admin-panel" element={<ProtectedRoute hasAccess={role === 'super-admin' ? true : false}><div>AdminPanel Page</div></ProtectedRoute>} />
                         <Route path="/logout" element={<div>Logout Page</div>} />
                         <Route path="/" element={<DashboardHomePage />} />
                     </Routes>
