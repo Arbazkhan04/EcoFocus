@@ -10,11 +10,14 @@ import { getCompanies, getCompany } from '../../apiManager/company'
 import ProtectedRoute from "../Common/protectedRoute";
 import {  setCompanyInStore, clearSelectionsFromStore } from "../../slices/appStateSlice";
 import { useDispatch, useSelector } from "react-redux";
+import Loader from "../Common/loader";
+
 const Dashboard = () => {
 
     // state management
     const dispatch = useDispatch();
     const { company } = useSelector((state) => state.appState);
+    const { userInfo } = useSelector((state) => state.auth);
 
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -51,7 +54,7 @@ const Dashboard = () => {
                     setFilteredClients(clientData.map((client) => client.name));
                 }
             } catch (error) {
-                console.error("Error fetching companies:", error.message);
+                setError(error.message || "Error fetching companies");
             }
         };
 
@@ -136,6 +139,10 @@ const Dashboard = () => {
                 const companyDataToStore = {
                     _id: res.data._id,
                     name: res.data.name,
+                    address: res.data.address,
+                    postalCode: res.data.postalCode,
+                    postalName: res.data.postalName,
+                    contactEmail: res.data.contactEmail,
                     registrationNumber: res.data.registrationNumber,
                     isAgency: res.data.isAgency,
                     isCompanyAdmin: res.data.isCompanyAdmin,
@@ -199,7 +206,7 @@ const Dashboard = () => {
         setSelectedClient("");
         setSelectedYear("");
         setFilteredYears([]);
-        setFilteredClients(clients);
+        setFilteredClients(clients.map(client => client.name));
     }
 
     // // Generate breadcrumbs
@@ -235,7 +242,7 @@ const Dashboard = () => {
 
     const topNavigationLinks = [
         { label: "Dashboard", icon: "ri-dashboard-line", path: "/dashboard" },
-        { label: "Informasjon", icon: "ri-information-line", path: "/dashboard/informasjon" },
+        { label: "Informasjon", icon: "ri-information-line", path: `/dashboard/informasjon` },
         { label: "Importer", icon: "ri-file-upload-line", path: "/dashboard/importer" },
         {
             label: "Grunnlagsdata",
@@ -270,7 +277,7 @@ const Dashboard = () => {
     ];
 
 
-    if (loading) return <div>Loading...</div>
+    if (loading) return <div> <Loader /></div>
     if (error) return <div>Error: {error}</div>
 
     return (
@@ -499,32 +506,32 @@ const Dashboard = () => {
                                     <ul>
                                         <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                                                Selected Client
+                                                {company?.name}
                                             </a>
                                         </li>
                                         <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                                                Selected Year
+                                                { company?.setBaseYear}
                                             </a>
                                         </li>
                                         <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                                                Logged-in user
+                                                { userInfo.email}
                                             </a>
                                         </li>
                                         <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                                                User Role
+                                                {userInfo.role}
                                             </a>
                                         </li>
-                                        <li>
+                                        {/* <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
                                                 ImportKilde
                                             </a>
-                                        </li>
+                                        </li> */}
                                         <li>
                                             <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                                                Agency Registration Number
+                                                {company?.AgencyId}
                                             </a>
                                         </li>
                                     </ul>

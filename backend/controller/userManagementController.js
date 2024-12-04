@@ -125,8 +125,8 @@ const login = async (req, res) => {
             });
             // do not send token
             return res.status(200).json({
-              userId: user._id,
-            role: user.userRole,
+                userId: user._id,
+                role: user.userRole,
                 message:'Email not verified, verification code sent to your email',
                 data:true,
                 email: user.email,
@@ -136,8 +136,8 @@ const login = async (req, res) => {
         //send jwt token if verified
         const token = user.createJWT();
         res.status(200).json({
-          userId: user._id,
-          role: user.userRole,
+            userId: user._id,
+            role: user.userRole,
             message:'login successful',
             email: user.email,
             isEmailVerified: user.isEmailVerified,
@@ -256,6 +256,36 @@ const forgotPassword = async (req, res, next) => {
       return res.status(200).json({ error: err.message, message: "Password reset failed", data: false });
     }
   };
+
+
+  const getUserName = async (req, res) => {
+    try {
+        const {phoneNo, email } = req.query;
+
+        const user  = await User.findOne({phoneNo, email});
+
+        if(!user) {
+            return res.status(200).json({
+                message:'User not found',
+                data:false
+            })
+        }
+
+        res.status(200).json({
+            message:'User found',
+            data:true,
+            name: user.userName
+        })
+      }
+    catch (error) {
+        res.status(200).json({
+            error:error.message,
+            message:'User not found',
+            data:false
+        })
+      }
+  }
+
 
 
   const verifyEmailCode = async (req, res) => {
@@ -377,5 +407,6 @@ const resendVerificationCode = async (req, res) => {
         forgotPassword,
         resetPassword,
         verifyEmailCode,
-        resendVerificationCode
+        resendVerificationCode,
+        getUserName
   }

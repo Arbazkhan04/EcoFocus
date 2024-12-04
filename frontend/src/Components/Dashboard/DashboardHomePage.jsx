@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook
-import dashboard from "../../assets/dashboard.jpg";
+import dashboard from "../../assets/dashboard.png";
 
 const DashboardHomePage = () => {
     const navigate = useNavigate(); // Initialize the navigate function

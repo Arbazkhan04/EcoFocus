@@ -118,6 +118,10 @@ const getCompanyData = async (req, res) => {
             name: company.name,
             registrationNumber: company.registrationNumber,
             setBaseYear: company.setBaseYear,
+            contactEmail: company.contactEmail,
+            address: company.address,
+            postalCode: company.postalCode,
+            postalName: company.postalName,
             contactPerson: company.contactPerson === userId, // if contact Person is same as user then this is supper admin
             isCompanyAdmin: company.admins.includes(userId), // if user is in admin list then this is admin
             user: company.users.includes(userId), // if user is in user list then this is user
@@ -141,6 +145,7 @@ const getCompanyData = async (req, res) => {
         });
     }
 }
+
 
 
 
