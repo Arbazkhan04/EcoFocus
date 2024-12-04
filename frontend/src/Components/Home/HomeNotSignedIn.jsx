@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import homePageImage from '../../assets/Home-page-image.jpg';
+import homePageImage from '../../assets/dashboard.png';
 import logo from '../../assets/apple-pay.png';
 
 const HomeNotSignedIn = () => {
