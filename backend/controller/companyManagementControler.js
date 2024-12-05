@@ -36,7 +36,7 @@ const createCompany = async (req, res) => {
             setBaseYear, // this is array of numbers
             createdBy: user._id,
             contactPerson: user._id,
-            admins: [user._id]
+            users: [{ userId: user._id, role: 'admin' }]
         });
 
         company.importSource = {
@@ -112,6 +112,9 @@ const getCompanyData = async (req, res) => {
             data: false
         });
 
+        // check the user is admin or not
+        const isAdmin = company.users.some(user => user.userId.toString() === userId && user.role === 'admin');
+
         // destructuring the company object
         const newCompany = {
             _id: company._id,
@@ -123,8 +126,8 @@ const getCompanyData = async (req, res) => {
             postalCode: company.postalCode,
             postalName: company.postalName,
             contactPerson: company.contactPerson === userId, // if contact Person is same as user then this is supper admin
-            isCompanyAdmin: company.admins.includes(userId), // if user is in admin list then this is admin
-            user: company.users.includes(userId), // if user is in user list then this is user
+            isCompanyAdmin: isAdmin, // if user is in admin list then this is admin
+            user: isAdmin, // if user is in user list then this is user
             isAgency: company.isAgency,
             agencyId: company.agencyId,
         };
@@ -146,11 +149,54 @@ const getCompanyData = async (req, res) => {
     }
 }
 
+const getCompanyUsers = async (req, res) => {
+    try {
+        const { companyId } = req.query;
+
+        // Find the company and populate the users array with user details
+        const company = await Company.findById(companyId).populate({
+            path: 'users.userId',
+            select: 'userName email phone', // Select only the required fields
+        });
+
+        if (!company) {
+            return res.status(200).json({
+                message: 'Company not found',
+                data: false,
+            });
+        }
+
+        // Filter out users who have removeAcess set to true
+        const users = company.users
+            .filter(user => !user.removeAcess)
+            .map(user => ({
+                userName: user.userId.userName,
+                userId: user.userId._id,
+                email: user.userId.email,
+                phone: user.userId.phone,
+                role: user.role,
+            }));
+
+        res.status(200).json({
+            message: 'Company users fetched successfully',
+            data: users,
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+            data: false,
+            message: 'Company users not fetched',
+        });
+    }
+};
+
+
 
 
 
 module.exports = {
     createCompany,
     getCompanies,
-    getCompanyData
+    getCompanyData,
+    getCompanyUsers
 };

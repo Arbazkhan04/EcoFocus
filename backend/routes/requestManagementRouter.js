@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getAllRequestForUserByCompany,
+const { getAllRequestForUserByCompanyOrAgency,
     getAllRequestForCompanyByUser,
     getAllRequestForAgencyByCompany,
     userRequestToAgency,
@@ -11,7 +11,7 @@ const { getAllRequestForUserByCompany,
     agencyRequestConnectionWithUser,
     acceptRequestOrDeclineRequest } = require('../controller/requestManagementController');
 
-router.get('/getAllRequestForUserByCompany', getAllRequestForUserByCompany);
+router.get('/getAllRequestForUserByCompanyOrAgency', getAllRequestForUserByCompanyOrAgency);
 router.get('/getAllRequestForCompanyByUser', getAllRequestForCompanyByUser);
 router.get('/getAllRequestForAgencyByCompany', getAllRequestForAgencyByCompany);
 router.post('/userRequestToAgency', userRequestToAgency);

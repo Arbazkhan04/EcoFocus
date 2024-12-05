@@ -137,6 +137,8 @@ const login = async (req, res) => {
         const token = user.createJWT();
         res.status(200).json({
             userId: user._id,
+            userName: user.userName,
+            phone: user.phone,
             role: user.userRole,
             message:'login successful',
             email: user.email,
@@ -250,7 +252,7 @@ const forgotPassword = async (req, res, next) => {
   
       res
         .status(200)
-        .json({ data: true, userId: user._id,
+        .json({ data: true, userId: user._id, userName: user.userName, phone: user.phone,
           role: user.userRole, message: "Password reset successful", email: user.email, isEmailVerified: user.isEmailVerified, token: user.createJWT() });
     } catch (err) {
       return res.status(200).json({ error: err.message, message: "Password reset failed", data: false });
@@ -260,10 +262,9 @@ const forgotPassword = async (req, res, next) => {
 
   const getUserName = async (req, res) => {
     try {
-        const {phoneNo, email } = req.query;
+        const {phone, email } = req.query;
 
-        const user  = await User.findOne({phoneNo, email});
-
+        const user = await User.findOne({phone, email});
         if(!user) {
             return res.status(200).json({
                 message:'User not found',
@@ -320,8 +321,10 @@ const forgotPassword = async (req, res, next) => {
         res.status(200).json({
             message: 'Email verified successfully!',
             email: user.email,
+            userName: user.userName,
+            phone: user.phone,
             userId: user._id,
-                role: user.userRole,
+            role: user.userRole,
             isEmailVerified: user.isEmailVerified,
             token: user.createJWT(), //create jwt token for the verified user
             data: true

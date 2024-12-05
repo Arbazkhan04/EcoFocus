@@ -11,8 +11,13 @@
       setBaseYear: [{ type: Number, required: true }],
       createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       contactPerson: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-      users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      users:[
+        {
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+          role: { type: String, enum: ['admin', 'user'] },
+          removeAcess: { type: Boolean, default: false }
+        }
+      ],
       isAgency: { type: Boolean, default: false },
       agencyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Agency' },
       importSource: {

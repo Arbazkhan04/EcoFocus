@@ -16,12 +16,12 @@ export const getCompany = async (clientName, baseYear, userId) => {
     return res.data;
 }
 
-export const getUserName = async (phoneNo, email) => {
-    const res = await api.get(`/userManagementRoutes/getUserName?phoneNo=${phoneNo}&email=${email}`);
+export const getUserName = async (phone, email) => {
+    const res = await api.get(`/userManagementRoutes/getUserName?phone=${phone}&email=${email}`);
     return res.data;
 }
 
-export const inviteUserToJoinCompany = async (companyId,userEmail, userPhone, role) => {
-    const res = await api.post('/companyManagementRoutes/companyRequestToUser', { companyId, userEmail, userPhone, role });
+export const getCompanyUsers = async (companyId) => {
+    const res = await api.get(`/companyManagementRoutes/getCompanyUsers?companyId=${companyId}`)
     return res.data;
 }
