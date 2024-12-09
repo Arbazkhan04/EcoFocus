@@ -8,8 +8,10 @@ const agencySchema = new mongoose.Schema({
     users: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        role: { type: String, enum: ['admin', 'user'] },
-        assignCompanyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' } // we can easily determine the company of the user
+        role: { type: String, enum: ['admin', 'user'] }, // role of the user in the agency
+        assignCompanies: [ // Companies assigned to the user in the agency
+          { type: mongoose.Schema.Types.ObjectId, ref: 'Company' }
+        ] 
       }
     ],
     createdAt: { type: Date, default: Date.now },

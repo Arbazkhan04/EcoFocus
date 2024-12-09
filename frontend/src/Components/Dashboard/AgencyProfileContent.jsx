@@ -1,6 +1,98 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
+import { getAllRequestForAgencyByCompanyOrUser, acceptRequestOrDeclineRequest, agencyRequestConnectionWithUser } from  '../../apiManager/request';
+import { useSelector } from "react-redux";
+import Loader from "../Common/loader"
+
 
 const AgencyProfileContent = () => {
+
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [generalError, setGeneralError] = useState('');
+    const [isAgencyAdmin, setIsAgencyAdmin] = useState(false);
+    const [phoneNo, setPhoneNo] = useState('');
+    const [email, setEmail] = useState('');
+    const [inviteUserField, setInviteUserField] = useState({ phoneNo:"", email:"" });
+    const [inviteUserError, setInviteUserError] = useState('');
+    const company = useSelector((state) => state.appState.company);
+    const agencyId = company?.agencyId;
+
+    useEffect(() => {
+        (async () => {
+            setGeneralError("");
+            setLoading(true);
+            try {
+                const res = await getAllRequestForAgencyByCompanyOrUser(agencyId);
+                if(!res.data) {
+                    setGeneralError(res.message||"No requests found");
+                    return;
+                }
+                console.log(res.data);
+                setRequests(res.data);
+            } catch (error) {
+                setGeneralError(error.message);
+            }finally {
+                setLoading(false);
+            }
+        })()
+    }, [agencyId]);
+
+    const validateInviteUser = () => {
+        let error = {};
+        if(!phoneNo) {
+            error.phoneNo = "Phone number is required";
+        }
+        if(!email) {
+            error.email = "Email is required";
+        }
+        setInviteUserField(error);
+        return Object.keys(error).length === 0;
+    }
+
+    const handleInviteUser = async (e) => {
+        e.preventDefault();
+        if(!validateInviteUser()) {
+            return;
+        }
+        setGeneralError("");
+        setLoading(true);
+        try {
+            const res = await agencyRequestConnectionWithUser(phoneNo, email, agencyId, isAgencyAdmin);
+            if(!res.data) {
+                setGeneralError(res.message||"Request not sent");
+                return;
+            }
+            alert("Request sent successfully");
+        } catch (error) {
+            setGeneralError(error.message);
+        }finally {
+            setLoading(false);
+        }
+    }
+
+
+    const hadleRequest = async (requestId, status) => {
+        setGeneralError("");
+        setLoading(true);
+        try {
+            const res = await acceptRequestOrDeclineRequest(requestId, status);
+            if(!res.data) {
+                setGeneralError(res.message||"Request not accepted");
+                return;
+            }
+        alert("Request accepted successfully");
+        }catch (error) {
+            setGeneralError(error.message);
+        }finally {
+            setLoading(false);
+        }
+    }
+
+
+    if(loading) {
+        return <Loader />
+    }
+
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-2xl font-bold text-blue-500 mb-6">Agency Profile</h1>
@@ -15,7 +107,6 @@ const AgencyProfileContent = () => {
                                 <th className="border border-gray-300 px-4 py-2">Client Name</th>
                                 <th className="border border-gray-300 px-4 py-2">Client Reg.No</th>
                                 <th className="border border-gray-300 px-4 py-2">Contact Person</th>
-                                <th className="border border-gray-300 px-4 py-2">Edit</th>
                                 <th className="border border-gray-300 px-4 py-2">Manage Access</th>
                             </tr>
                         </thead>
@@ -24,9 +115,6 @@ const AgencyProfileContent = () => {
                                 <td className="border border-gray-300 px-4 py-2">Excompany</td>
                                 <td className="border border-gray-300 px-4 py-2">99999999</td>
                                 <td className="border border-gray-300 px-4 py-2">Name NAME</td>
-                                <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Edit</button>
-                                </td>
                                 <td className="border border-gray-300 px-4 py-2 text-center">
                                     <button className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Manage</button>
                                 </td>
@@ -67,28 +155,45 @@ const AgencyProfileContent = () => {
                 {/* Invite Existing User to Agency */}
                 <div className="bg-white p-6 rounded col-span-2 2xl:col-span-1 shadow-md">
                     <h2 className="text-lg font-bold text-blue-500 mb-4">Invite Existing User to Agency</h2>
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleInviteUser}>
                         <div>
                             <label className="block text-gray-600 mb-1">Phone Number</label>
                             <input
                                 type="text"
-                                className="w-full border border-gray-300 rounded px-3 py-2"
+                                value={phoneNo}
+                                onChange={(e) => {
+                                    setPhoneNo(e.target.value);
+                                    setInviteUserField((prev) => ({ ...prev, phoneNo: "" }));
+                                }}
+                                className={`w-full border border-gray-300 rounded px-3 py-2 ${inviteUserField.phoneNo && "border-red-500"}`}
                             />
+                            {inviteUserField.phoneNo && <p className="text-red-500 text-sm">{inviteUserField.phoneNo}</p>}
                         </div>
                         <div>
                             <label className="block text-gray-600 mb-1">Email</label>
                             <input
                                 type="email"
-                                className="w-full border border-gray-300 rounded px-3 py-2"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    setInviteUserField((prev) => ({ ...prev, email: "" }));
+                                }}
+                                className={`w-full border border-gray-300 rounded px-3 py-2 ${inviteUserField.email && "border-red-500"}`}
                             />
+                            {inviteUserField.email && <p className="text-red-500 text-sm">{inviteUserField.email}</p>}
                         </div>
                         <div className="flex items-center space-x-4">
-                            <input type="checkbox" className="form-checkbox h-5 w-5 text-blue-600" />
+                            <input type="checkbox"
+                             checked={isAgencyAdmin}
+                             onChange={() => setIsAgencyAdmin(!isAgencyAdmin)}
+                             className="form-checkbox h-5 w-5 text-blue-600" />
                             <label className="text-gray-600">Agency Admin</label>
                         </div>
                         <div className="text-center">
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Invite User</button>
+                            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Invite User</button>
                         </div>
+
+                        {generalError && <p className="text-red-500 text-sm text-center">{generalError}</p>}
                     </form>
                 </div>
 
@@ -98,25 +203,26 @@ const AgencyProfileContent = () => {
                     <table className="w-full border-collapse border border-gray-300">
                         <thead>
                             <tr>
+                                <th className="border border-gray-300 px-4 py-2">Type</th>
                                 <th className="border border-gray-300 px-4 py-2">Name</th>
-                                <th className="border border-gray-300 px-4 py-2">Email</th>
-                                <th className="border border-gray-300 px-4 py-2">Phone</th>
                                 <th className="border border-gray-300 px-4 py-2">Accept</th>
                                 <th className="border border-gray-300 px-4 py-2">Deny</th>
                             </tr>
                         </thead>
                         <tbody >
-                            <tr>
-                                <td className="border border-gray-300 px-4 py-2">USERNAME</td>
-                                <td className="border border-gray-300 px-4 py-2">Email@mail.email</td>
-                                <td className="border border-gray-300 px-4 py-2">Phone</td>
+                             { requests.map((request, index) => (
+                                <tr key={index}>
+                                <td className="border border-gray-300 px-4 py-2">{request.type}</td>
+                                <td className="border border-gray-300 px-4 py-2">{request.name}</td>
                                 <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Accept</button>
+                                    <button onClick={() => hadleRequest(request.requestId,"accepted")} className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Accept</button>
                                 </td>
                                 <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Deny</button>
+                                    <button onClick={() => hadleRequest(request.requestId,"declined")} className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Deny</button>
                                 </td>
                             </tr>
+                             ))}
+
                         </tbody>
                     </table>
                 </div>
@@ -132,7 +238,6 @@ const AgencyProfileContent = () => {
                                 <th className="border border-gray-300 px-4 py-2">Phone</th>
                                 <th className="border border-gray-300 px-4 py-2">Agency Admin</th>
                                 <th className="border border-gray-300 px-4 py-2">Remove Access</th>
-                                <th className="border border-gray-300 px-4 py-2">Delete</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -145,9 +250,6 @@ const AgencyProfileContent = () => {
                                 </td>
                                 <td className="border border-gray-300 px-4 py-2 text-center">
                                     <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
-                                </td>
-                                <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
                                 </td>
                             </tr>
                         </tbody>

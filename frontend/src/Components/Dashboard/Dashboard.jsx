@@ -150,6 +150,9 @@ const Dashboard = () => {
                     user: res.data.user,
                     contactPerson: res.data.contactPerson,
                     agencyId: res.data.agencyId,
+                    agencyAdmin: res.data.agencyAdmin,
+                    agencyUser: res.data.agencyUser,
+                    contactPersonOfAgency: res.data.contactPersonOfAgency,
                 };
               
                 // only store the selected company data
@@ -546,8 +549,8 @@ const Dashboard = () => {
                     <Routes>
                         <Route path="/dashboard" element={<DashboardHomePage />} />
                         <Route path="/user-profile" element={<ProtectedRoute hasAccess={role === 'user' ? true : false}><UserProfileContent /></ProtectedRoute>} />
-                        <Route path="/agency-profile" element={<ProtectedRoute hasAccess={company?.isAgency}><AgencyProfileContent /></ProtectedRoute>} />
-                        <Route path="/informasjon" element={<ProtectedRoute hasAccess={company?.isCompanyAdmin}><Informasjon /></ProtectedRoute>} />
+                        <Route path="/agency-profile" element={<ProtectedRoute hasAccess={company?.isAgency && (company?.contactPersonOfAgency  || company.agencyUser || company.agencyAdmin)  }><AgencyProfileContent /></ProtectedRoute>} />
+                        <Route path="/informasjon" element={<ProtectedRoute hasAccess={company?.isCompanyAdmin || company?.contactPerson || company?.user}><Informasjon /></ProtectedRoute>} />
                         <Route path="/create-new-client" element={<CreateNewClient />} />
                         <Route path="/importer" element={<div>Importer Page</div>} />
                         <Route path="/grunnlagsdata" element={<div>Grunnlagsdata Page</div>} />

@@ -171,7 +171,7 @@ const companyRequestConnectionWithAgency = async (req, res) => {
     try {
         const { registrationNumber, name, companyId } = req.body;
         //find the company deos it exist
-        const company = await company.findById(companyId);
+        const company = await Company.findById(companyId);
         if (!company) return res.status(200).json({ 
             message: 'Company not found',
             data: false
@@ -262,7 +262,7 @@ const agencyRequestConnectionWithUser = async (req, res) => {
             to: user._id,
             type: 'agency_to_user',
             status: 'pending',
-            role: isAdmin ? 'admin' : 'user'
+            role: isAdmin ? 'agency_admin' : 'user'
         });
 
         await newRequest.save();
@@ -378,9 +378,27 @@ const acceptRequestOrDeclineRequest = async (req, res) => {
 
                 await agency.save();
             }
+            //user to agency
+            else if (request.type === 'user_to_agency') {
+                const agency = await Agency.findById(request.to);
+                const user = await User.findById(request.from);
 
+                const userInAgency = agency.users.find(user => user.userId === user._id);
+                if (userInAgency) {
+                    return res.status(200).json({
+                        message: 'User already in the agency',
+                        data: false
+                    });
+                }
+
+                agency.users.push({
+                    userId: user._id,
+                    role: 'user',
+                });
+
+                await agency.save();
+            }
         }
-
         res.status(200).json({
             message: 'Request updated successfully',
             data: true
@@ -506,31 +524,60 @@ const getAllRequestForCompanyByUser = async (req, res) => {
 }
 
 
-const getAllRequestForAgencyByCompany = async (req, res) => {
+const getAllRequestForAgencyByCompanyOrUser = async (req, res) => {
     try {
-        const { agencyId } = req.body;
+        const { agencyId } = req.query;
         const requests = await Request.find({
             to: agencyId,
-            type: 'company_to_agency',
+            type: { $in: ['user_to_agency', 'company_to_agency'] }, // Match company or agency
             status: 'pending'
         })
-        .populate({   
-             path: 'from',
-             model: 'Company',
-             select: 'name registrationNumber'
-        })
-        .select('_id from');
+        .lean();
 
-        const data = requests.map(request => ({
-            companyId: request.from._id.toString(),
-            companyName: request.from.name,
-            registrationNumber: request.from.registrationNumber,
-            requestId: request._id.toString()
-        }));
+        // Separate requests by type
+        const userRequests = requests.filter(req => req.type === 'user_to_agency');
+        const companyRequests = requests.filter(req => req.type === 'company_to_agency');
+
+        // Fetch user details
+        const userIds = userRequests.map(req => req.from);
+        const users = await User.find({
+            _id: { $in: userIds }
+        }).select('_id userName email phone').lean();
+
+        // Fetch company details
+        const companyIds = companyRequests.map(req => req.from);
+        const companies = await Company.find({
+            _id: { $in: companyIds }
+        }).select('_id name registrationNumber').lean();
+
+        // Prepare response data
+        const data = [
+            ...userRequests.map(req => {
+                const user = users.find(u => u._id.toString() === req.from.toString());
+                return {
+                    type: 'user',
+                    id: user._id.toString(),
+                    name: user.userName,
+                    // email: user.email,
+                    // phone: user.phone,
+                    requestId: req._id.toString()
+                };
+            }),
+            ...companyRequests.map(req => {
+                const company = companies.find(c => c._id.toString() === req.from.toString());
+                return {
+                    type: 'company',
+                    id: company._id.toString(),
+                    name: company.name,
+                    // registrationNumber: company.registrationNumber,
+                    requestId: req._id.toString()
+                };
+            })
+        ];
 
         res.status(200).json({
-            message: 'Requests fetched successfully',
-            data: data
+            message: 'Pending requests fetched successfully',
+            data
         });
 
     }
@@ -546,7 +593,7 @@ const getAllRequestForAgencyByCompany = async (req, res) => {
 module.exports = {
     getAllRequestForUserByCompanyOrAgency,
     getAllRequestForCompanyByUser,
-    getAllRequestForAgencyByCompany,
+    getAllRequestForAgencyByCompanyOrUser,
     userRequestToAgency,
     companyRequestToUser,
     userRequestToCompany,

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { getAllRequestForUserByCompanyOrAgency,
     getAllRequestForCompanyByUser,
-    getAllRequestForAgencyByCompany,
+    getAllRequestForAgencyByCompanyOrUser,
     userRequestToAgency,
     companyRequestToUser,
     userRequestToCompany,
@@ -13,7 +13,7 @@ const { getAllRequestForUserByCompanyOrAgency,
 
 router.get('/getAllRequestForUserByCompanyOrAgency', getAllRequestForUserByCompanyOrAgency);
 router.get('/getAllRequestForCompanyByUser', getAllRequestForCompanyByUser);
-router.get('/getAllRequestForAgencyByCompany', getAllRequestForAgencyByCompany);
+router.get('/getAllRequestForAgencyByCompanyOrUser', getAllRequestForAgencyByCompanyOrUser);
 router.post('/userRequestToAgency', userRequestToAgency);
 router.post('/companyRequestToUser', companyRequestToUser);
 router.post('/userRequestToCompany', userRequestToCompany);

@@ -49,8 +49,8 @@ storing any kind of data in the agency. we are just linking.
 
 
 
-company can be connected with multiple agency? no agency can request connection with one company.
-
+company can be connected with multiple agency?
+No. a company can be connected with one agency.
 
 
 

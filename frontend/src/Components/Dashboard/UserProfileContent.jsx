@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllRequestForUserByCompanyOrAgency, userRequestToCompany } from "../../apiManager/request";
 import { acceptRequestOrDeclineRequest } from "../../apiManager/request";
+import { getCompanies } from "../../apiManager/company";
 
 import Loader from '../Common/loader';
 
@@ -18,6 +19,25 @@ const UserProfileContent = () => {
     const [companyName, setCompanyName] = useState('');
     const [requests, setRequests] = useState([]);
     const [fieldErrorForCompany, setFieldErrorForCompany] = useState({ companyRegNumber: '', companyName: '' });
+    const [companies, setCompanies] = useState([]);
+
+
+    useEffect(() => {
+        (async () => {
+            setLoading(true);
+            try {
+                const res = await getCompanies(userInfo.userId);
+                if(!res.data) {
+                    setGeneralError(res.message ||'No data found');
+                }
+                setCompanies(res.data);
+            }catch (error){
+                setGeneralError(error.message || 'Something went wrong');
+            }finally {
+                setLoading(false);
+            }
+        })();
+    },[userInfo.userId]);
   
     const validateCompanyRequest = () => {
         let error = {};
@@ -31,6 +51,11 @@ const UserProfileContent = () => {
 
         return Object.keys(error).length === 0;
     };
+
+
+    const handleRemoveCompany = async(id) => {
+        console.log(id);
+    }
 
     const handleRquestToCompany = async () => {
         if (!validateCompanyRequest()) return;
@@ -236,26 +261,22 @@ const UserProfileContent = () => {
                                 <th className="border border-gray-300 px-4 py-2">Client Name</th>
                                 <th className="border border-gray-300 px-4 py-2">Client Reg.No</th>
                                 <th className="border border-gray-300 px-4 py-2">ContactPerson</th>
-                                <th className="border border-gray-300 px-4 py-2">Edit</th>
                                 <th className="border border-gray-300 px-4 py-2">Remove</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td className="border border-gray-300 px-4 py-2">Excompany</td>
-                                <td className="border border-gray-300 px-4 py-2">99999999</td>
-                                <td className="border border-gray-300 px-4 py-2">Name NAME</td>
-                                <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                                        Edit
-                                    </button>
-                                </td>
-                                <td className="border border-gray-300 px-4 py-2 text-center">
-                                    <button className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                                        Remove
-                                    </button>
-                                </td>
-                            </tr>
+                            { companies.map((company) => (
+                                <tr key={company.companyId}>
+                                    <td className="border border-gray-300 px-4 py-2">{company.name}</td>
+                                    <td className="border border-gray-300 px-4 py-2">{company.registrationNumber}</td>
+                                    <td className="border border-gray-300 px-4 py-2">{company.contactPerson}</td>
+                                    <td className="border border-gray-300 px-4 py-2 text-center">
+                                        <button onClick={() => handleRemoveCompany(company.id)} className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                            )) }
                         </tbody>
                     </table>
                 </div>

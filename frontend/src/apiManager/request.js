@@ -26,3 +26,18 @@ export const userRequestToCompany = async (userId, registrationNumber, name) => 
     const res = await api.post('/requestManagementRoutes/userRequestToCompany', { userId, registrationNumber, name });
     return res.data;
 }
+
+export const companyRequestConnectionWithAgency = async (companyId, registrationNumber, name) => {
+    const res = await api.post('/requestManagementRoutes/companyRequestConnectionWithAgency', { companyId, registrationNumber, name });
+    return res.data;
+}
+
+export const getAllRequestForAgencyByCompanyOrUser = async (agencyId) => {
+    const res = await api.get(`/requestManagementRoutes/getAllRequestForAgencyByCompanyOrUser?agencyId=${agencyId}`);
+    return res.data;
+}
+
+export const agencyRequestConnectionWithUser = async (phone, email, agencyId, isAdmin) => {
+    const res = await api.post('/requestManagementRoutes/agencyRequestConnectionWithUser', { phone, email, agencyId, isAdmin });
+    return res.data;
+}

@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const requestSchema = new mongoose.Schema({
     type: { 
       type: String, 
-      enum: ['user_to_company', 'company_to_user', 'user_to_agency', 'company_to_agency'], 
+      enum: ['user_to_company', 'company_to_user','agency_to_user', 'user_to_agency', 'company_to_agency'], 
       required: true 
     },
     role: { type: String, enum: ['user', 'company_admin', 'agency_admin'], default: 'user' },

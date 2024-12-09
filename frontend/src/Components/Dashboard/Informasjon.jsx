@@ -1,9 +1,13 @@
 
 import React, { useEffect, useState } from "react";
 import { getUserName, getCompanyUsers } from "../../apiManager/company";
-import { inviteUserToJoinCompany, getAllRequestForCompanyByUser } from "../../apiManager/request";
+import { inviteUserToJoinCompany, getAllRequestForCompanyByUser,companyRequestConnectionWithAgency } from "../../apiManager/request";
 import Loader from "../Common/loader";
 import { useSelector } from "react-redux";
+import { promoteToAgency } from "../../apiManager/agency";
+import { useDispatch } from "react-redux";
+import { setCompanyInStore } from "../../slices/appStateSlice"
+
 
 const Informasjon = () => {
     const [phoneNo, setPhoneNo] = useState("");
@@ -16,8 +20,14 @@ const Informasjon = () => {
     const [generalError, setGeneralError] = useState(""); // General error for API failures
     const [companyUsers, setCompanyUsers] = useState([]);
 
+    const [registrationNumber, setRegistrationNumber] = useState("");
+    const [agencyName, setAgencyName] = useState("");
+    const [fieldErrorForAgencyFields, setFieldErrorForAgencyFields] = useState({ registrationNumber: "", agencyName: "" }); // Inline field errors
+    const [agencyGeneralError, setAgencyGeneralError] = useState(""); // General error for API failures
     const company = useSelector((state) => state.appState.company);
-    const companyId = company?._id;
+    const companyId = company._id;
+
+    const dispatch = useDispatch();
 
     //get all request for company by user
     useEffect(() => {
@@ -50,13 +60,24 @@ const Informasjon = () => {
         return Object.keys(errors).length === 0;
     };
 
+    
+
+    const validateAgencyRequest = () => {
+        let errors = {};
+        if (!registrationNumber) errors.registrationNumber = "registration number is required.";
+        if (!agencyName) errors.agencyName = "agency name is required.";
+
+        setFieldErrorForAgencyFields(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleGetUserName = async () => {
         setGeneralError("");
         if (!validateInviteUser()) return;
 
         setLoading(true);
         try {
-            const res = await getUserName(phoneNo, email);
+            const res = await getUserName(phoneNo,email);
             if (!res.data) {
                 setGeneralError(res.message || "No user found.");
             } else {
@@ -69,9 +90,11 @@ const Informasjon = () => {
         }
     };
 
+
     const handleInviteUser = async (e) => {
         e.preventDefault();
         setGeneralError("");
+        console.log("Inviting user");
         if (!validateInviteUser()) return;
 
         setLoading(true);
@@ -99,6 +122,37 @@ const Informasjon = () => {
         }
     };
 
+
+    const handleInviteAgency = async (e) => {
+        e.preventDefault();
+        console.log("Inviting agency");
+        setGeneralError("");
+        if (!validateAgencyRequest()) return;
+
+        setLoading(true);
+        try {
+            const res = await companyRequestConnectionWithAgency(
+                companyId,
+                registrationNumber,
+                agencyName
+            );
+            console.log(res)
+            if (!res.data) {
+                setAgencyGeneralError(res.message || "Could not invite user.");
+            } else {
+                setAgencyGeneralError("");
+                alert("Agency invited successfully.");
+                setRegistrationNumber("");
+                setAgencyName("");
+
+            }
+        } catch (error) {
+            setGeneralError(error.message || "An error occurred while inviting the user.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         (async () => {
             setGeneralError("");
@@ -117,6 +171,35 @@ const Informasjon = () => {
             }
         })()
     },[companyId]);
+
+    const makeAgency = async (id) => {
+        setGeneralError("");
+        setLoading(true);
+        try {
+            const res = await promoteToAgency(id);
+            if(!res.data) {
+                setGeneralError(res.message || "Could not promote to agency.");
+                return;
+            }
+
+            //update the redux store
+            const companyData = {
+                ...company,
+                agencyId: res.agencyId,
+                isAgency: true,
+                contactPersonOfAgency:true
+            }
+
+            //dispatch the action to update the company
+            dispatch(setCompanyInStore(companyData));
+
+            alert("Promoted to agency successfully.");
+        } catch (error) {
+            setGeneralError(error.message || "An error occurred while promoting to agency.");
+        }finally {
+            setLoading(false);
+        }
+    }
 
     const handleAccept = (requestId) => {
         console.log(`Accepted request with ID: ${requestId}`);
@@ -159,6 +242,10 @@ const Informasjon = () => {
                         <div className="text-center ">
                             <button
                                 type="submit"
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent the default form submission behavior
+                                    makeAgency(companyId); // Trigger your custom function
+                                  }}
                                 className="w-4/6 mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                             >
                                 Promote to Agency
@@ -239,6 +326,57 @@ const Informasjon = () => {
                         </button>
 
                         {generalError && <p className="text-red-500 mt-2">{generalError}</p>}
+                    </form>
+                </div>
+
+                {/* Request connection with Agency */}
+                  <div className="bg-white p-4 col-span-3 lg:col-span-3 xl:col-span-1 rounded shadow-md">
+                    <h2 className="text-lg font-bold text-blue-500 mb-4">Request connection with Agency</h2>
+                    <form className="space-y-4" onSubmit={handleInviteAgency}>
+                        <div>
+                            <label className="block text-gray-600 mb-1">Registration Number</label>
+                            <input
+                                type="text"
+                                value={registrationNumber}
+                                onChange={(e) => {
+                                    setRegistrationNumber(e.target.value);
+                                    setFieldErrorForAgencyFields((prev) => ({ ...prev, registrationNumber: "" })); // Clear error on input change
+                                }}
+                                className={`w-full border px-3 py-2 rounded ${fieldErrorForAgencyFields.registrationNumber ? "border-red-500" : "border-gray-300"
+                                    }`}
+                                placeholder="Enter registration number"
+                            />
+                            {fieldErrorForAgencyFields.registrationNumber && (
+                                <p className="text-red-500 text-sm mt-1">{fieldErrorForAgencyFields.registrationNumber}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-600 mb-1">Name</label>
+                            <input
+                                type="text"
+                                value={agencyName}
+                                onChange={(e) => {
+                                    setAgencyName(e.target.value);
+                                    setFieldErrorForAgencyFields((prev) => ({ ...prev, agencyName: "" })); // Clear error on input change
+                                }}
+                                className={`w-full border px-3 py-2 rounded ${fieldErrorForAgencyFields.agencyName ? "border-red-500" : "border-gray-300"
+                                    }`}
+                                placeholder="Enter email"
+                            />
+                            {fieldErrorForAgencyFields.agencyName && (
+                                <p className="text-red-500 text-sm mt-1">{fieldErrorForAgencyFields.agencyName}</p>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                        >
+                            Invite Agency
+                        </button>
+
+                        {agencyGeneralError && <p className="text-red-500 mt-2">{agencyGeneralError}</p>}
                     </form>
                 </div>
 
