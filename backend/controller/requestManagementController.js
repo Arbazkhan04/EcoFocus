@@ -5,10 +5,13 @@ const User = require('../modals/userManagementModal');
 
 // user request to agency for connection
 const userRequestToAgency = async (req, res) => {
-    try {
         const { userId, registrationNumber, name } = req.body;
+        priorityToAgency(userId, registrationNumber,res);
+}
+   
 
-        // Find the agency
+ const priorityToAgency = async (userId, registrationNumber,res) => {
+    try {
         const agency = await Agency.findOne({ registrationNumber });
         if (!agency) {
             return res.status(200).json({ message: 'Agency not found', data: false });
@@ -49,9 +52,9 @@ const userRequestToAgency = async (req, res) => {
     } catch (error) {
         res.status(200).json({ error: error.message, message: 'Failed to send request', data: false });
     }
- }
+}
 
- const companyRequestToUser = async (req, res) => {
+const companyRequestToUser = async (req, res) => {
     try {
         const { companyId, userEmail, userPhone, role } = req.body;
         // check if the company exists
@@ -122,6 +125,9 @@ const userRequestToCompany = async (req, res) => {
             data: false
         });
 
+        // if company exist and company is an agency 
+        if (company.isAgency) return priorityToAgency(userId, registrationNumber,res);
+
         // check if the user exists
         const user = await User.findById(userId);
         if (!user) return res.status(200).json({
@@ -172,14 +178,14 @@ const companyRequestConnectionWithAgency = async (req, res) => {
         const { registrationNumber, name, companyId } = req.body;
         //find the company deos it exist
         const company = await Company.findById(companyId);
-        if (!company) return res.status(200).json({ 
+        if (!company) return res.status(200).json({
             message: 'Company not found',
             data: false
         });
 
         //find the agency
         const agency = await Agency.findOne({ registrationNumber, name });
-        if (!agency) return res.status(200).json({ 
+        if (!agency) return res.status(200).json({
             message: 'Agency not found',
             data: false
         });
@@ -209,7 +215,7 @@ const companyRequestConnectionWithAgency = async (req, res) => {
             message: 'Request sent successfully',
             data: true
         });
-        
+
     } catch (error) {
         res.status(200).json({
             message: 'Failed to send request',
@@ -225,21 +231,21 @@ const agencyRequestConnectionWithUser = async (req, res) => {
         const { phone, email, agencyId, isAdmin } = req.body;
         // find the agency
         const agency = await Agency.findById(agencyId);
-        if(!agency) return res.status(200).json({
+        if (!agency) return res.status(200).json({
             message: 'Agency not found',
             data: false
         });
 
         // find the user
         const user = await User.findOne({ phone, email });
-        if(!user) return res.status(200).json({
+        if (!user) return res.status(200).json({
             message: 'User not found',
             data: false
         });
 
         // check if the user is already in the agency
         const userInAgency = agency.users.find(user => user.userId === user._id);
-        if(userInAgency) return res.status(200).json({
+        if (userInAgency) return res.status(200).json({
             message: 'User already in the agency',
             data: false
         });
@@ -252,7 +258,7 @@ const agencyRequestConnectionWithUser = async (req, res) => {
             status: 'pending'
         });
 
-        if(request) return res.status(200).json({
+        if (request) return res.status(200).json({
             message: 'Request already sent to this user',
             data: false
         });
@@ -306,7 +312,7 @@ const acceptRequestOrDeclineRequest = async (req, res) => {
         if (status === 'accepted') {
             //give priority to agency
             if (request.type === 'agency_to_user') {
-                
+
                 const agency = await Agency.findById(request.from);
                 const user = await User.findById(request.to);
 
@@ -340,7 +346,7 @@ const acceptRequestOrDeclineRequest = async (req, res) => {
                 //     company.admins.push(user._id);
                 // }
 
-                if(!company.users.includes(user._id)) {
+                if (!company.users.includes(user._id)) {
                     company.users.push({ userId: user._id, role: request.role === 'company_admin' ? 'admin' : 'user' });
                 }
 
@@ -363,7 +369,7 @@ const acceptRequestOrDeclineRequest = async (req, res) => {
                 // Add company to the agency
                 const company = await Company.findById(request.from);
                 const agency = await Agency.findById(request.to);
-                
+
                 // if the company is not already is promoted To agency
                 if (company.isAgency) {
                     return res.status(200).json({
@@ -424,7 +430,7 @@ const getAllRequestForUserByCompanyOrAgency = async (req, res) => {
             type: { $in: ['company_to_user', 'agency_to_user'] }, // Match company or agency
             status: 'pending'
         })
-        .lean(); // Convert mongoose documents to plain objects for easier manipulation
+            .lean(); // Convert mongoose documents to plain objects for easier manipulation
 
         // Separate requests by type
         const companyRequests = requests.filter(req => req.type === 'company_to_user');
@@ -490,16 +496,16 @@ const getAllRequestForCompanyByUser = async (req, res) => {
     try {
         const { companyId } = req.query;
         const requests = await Request.find({
-             to: companyId,
-             type: 'user_to_company',
-             status: 'pending'
-             })
-             .populate({
+            to: companyId,
+            type: 'user_to_company',
+            status: 'pending'
+        })
+            .populate({
                 path: 'from',
                 model: 'User',
                 select: 'userName email phone',
-             })
-             .select('_id from');
+            })
+            .select('_id from');
 
 
         const data = requests.map(request => ({
@@ -532,7 +538,7 @@ const getAllRequestForAgencyByCompanyOrUser = async (req, res) => {
             type: { $in: ['user_to_agency', 'company_to_agency'] }, // Match company or agency
             status: 'pending'
         })
-        .lean();
+            .lean();
 
         // Separate requests by type
         const userRequests = requests.filter(req => req.type === 'user_to_agency');

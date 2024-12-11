@@ -143,7 +143,29 @@ const getCompanies = async (req, res) => {
                 contactPerson: company.contactPerson ? company.contactPerson.userName : 'Unknown',
                 id: company._id
             });
-        });
+        }); 
+
+        // push the agency as well if the user is in the agency(means compnay in which user is associated is agency)
+        const userAgency = await Agency.findOne({
+            "users.userId": userId
+        }).populate('registrationNumber');
+
+        if (userAgency) {
+           // find the company
+           const company = await Company.findOne({ registrationNumber: userAgency.registrationNumber });
+            const contactPerson = await User.findById(company.contactPerson);
+
+              if (company) {
+                companies.push({
+                     name: company.name,
+                     setBaseYear: company.setBaseYear,
+                     registrationNumber: company.registrationNumber,
+                     contactPerson: contactPerson ? contactPerson.userName : 'Unknown',
+                     id: company._id
+                });
+              }
+        }
+
 
         // Step 2: Find agencies where the user is in the users array
         const userAgencies = await Agency.find({
