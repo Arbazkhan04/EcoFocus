@@ -3,8 +3,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllRequestForUserByCompanyOrAgency, userRequestToCompany } from "../../apiManager/request";
 import { acceptRequestOrDeclineRequest } from "../../apiManager/request";
-import { getCompanies } from "../../apiManager/company";
-
+import { getAllClientAssociateWithYou } from "../../apiManager/company";
+import { removeClient } from "../../apiManager/company"
 import Loader from '../Common/loader';
 
 const UserProfileContent = () => {
@@ -26,7 +26,7 @@ const UserProfileContent = () => {
         (async () => {
             setLoading(true);
             try {
-                const res = await getCompanies(userInfo.userId);
+                const res = await getAllClientAssociateWithYou(userInfo.userId);
                 if(!res.data) {
                     setGeneralError(res.message ||'No data found');
                 }
@@ -54,7 +54,21 @@ const UserProfileContent = () => {
 
 
     const handleRemoveCompany = async(id) => {
-        console.log(id);
+        setLoading(true);
+        try {
+            const res = await removeClient(id, userInfo.userId);
+            if(!res.data) {
+                setGeneralError(res.message || "something went wrong");
+                return;
+            }
+            // remove company from the list
+            setCompanies(companies.filter(company => company.id !== id));
+            alert('Company removed successfully');
+        } catch (error){
+            setGeneralError('Something went wrong');
+        } finally {
+            setLoading(false);
+        }
     }
 
     const handleRquestToCompany = async () => {
@@ -80,8 +94,10 @@ const UserProfileContent = () => {
         setLoading(true);
         try {
             const res = await acceptRequestOrDeclineRequest(requestId,status);
+            console.log(res);
             if(!res.data) {
-                setGeneralError('Request updated successfully');
+                setGeneralError(res.message||'somethign went wrong');
+                return;
             }
         }catch (error){
             setGeneralError('Something went wrong');
@@ -254,7 +270,7 @@ const UserProfileContent = () => {
 
                 {/* My Clients */}
                 <div className="bg-white p-6 rounded col-span-2 2xl:col-span-1 shadow-md">
-                    <h2 className="text-lg font-bold text-blue-500 mb-4">My Clients</h2>
+                    <h2 className="text-lg font-bold text-blue-500 mb-4">Linked Companies</h2>
                     <table className="w-full border-collapse border border-gray-300">
                         <thead>
                             <tr>
@@ -265,7 +281,7 @@ const UserProfileContent = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            { companies.map((company) => (
+                            { companies.length > 0 &&  companies.map((company) => (
                                 <tr key={company.companyId}>
                                     <td className="border border-gray-300 px-4 py-2">{company.name}</td>
                                     <td className="border border-gray-300 px-4 py-2">{company.registrationNumber}</td>

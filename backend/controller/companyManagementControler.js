@@ -66,14 +66,14 @@ const createCompany = async (req, res) => {
 
 // get companies or agencies created by the user or have access to the company or agency
 // if the company become agency check in agency does this user has access to the agency and what kind of access he has user or admin or contact peron
- 
+
 
 // const getCompanies = async (req, res) => {
 //     try {
 //       const { userId } = req.query;
-  
+
 //       console.log(userId);
-  
+
 //       // Fetch user
 //       const user = await User.findById(userId);
 //       if (!user) {
@@ -82,10 +82,10 @@ const createCompany = async (req, res) => {
 //           data: false,
 //         });
 //       }
-  
+
 //       // Fetch companies created by the user also 
 //       const companies = await Company.find({ createdBy: userId });
-  
+
 //       // Map over companies to extract required data asynchronously
 //       const companyData = await Promise.all(
 //         companies.map(async (company) => {
@@ -99,7 +99,7 @@ const createCompany = async (req, res) => {
 //           };
 //         })
 //       );
-  
+
 //       // Send response
 //       res.status(200).json({
 //         message: 'Companies fetched successfully',
@@ -143,7 +143,7 @@ const getCompanies = async (req, res) => {
                 contactPerson: company.contactPerson ? company.contactPerson.userName : 'Unknown',
                 id: company._id
             });
-        }); 
+        });
 
         // push the agency as well if the user is in the agency(means compnay in which user is associated is agency)
         const userAgency = await Agency.findOne({
@@ -151,19 +151,19 @@ const getCompanies = async (req, res) => {
         }).populate('registrationNumber');
 
         if (userAgency) {
-           // find the company
-           const company = await Company.findOne({ registrationNumber: userAgency.registrationNumber });
+            // find the company
+            const company = await Company.findOne({ registrationNumber: userAgency.registrationNumber });
             const contactPerson = await User.findById(company.contactPerson);
 
-              if (company) {
+            if (company) {
                 companies.push({
-                     name: company.name,
-                     setBaseYear: company.setBaseYear,
-                     registrationNumber: company.registrationNumber,
-                     contactPerson: contactPerson ? contactPerson.userName : 'Unknown',
-                     id: company._id
+                    name: company.name,
+                    setBaseYear: company.setBaseYear,
+                    registrationNumber: company.registrationNumber,
+                    contactPerson: contactPerson ? contactPerson.userName : 'Unknown',
+                    id: company._id
                 });
-              }
+            }
         }
 
 
@@ -190,7 +190,7 @@ const getCompanies = async (req, res) => {
                         id: company._id
                     });
                 });
-            } 
+            }
         }
 
         // Remove duplicates (if any) by checking unique `id`
@@ -216,9 +216,6 @@ const getCompanies = async (req, res) => {
 };
 
 
-
-
-  
 
 
 const getCompanyData = async (req, res) => {
@@ -315,8 +312,8 @@ const getCompanyUsers = async (req, res) => {
         const users = company.users
             .filter(user =>
                 user.removeAcess &&
-                user.userId && 
-                user.userId._id && 
+                user.userId &&
+                user.userId._id &&
                 user.userId._id.toString() !== contactPersonId
             )
 
@@ -341,13 +338,180 @@ const getCompanyUsers = async (req, res) => {
     }
 };
 
+const removeClient = async (req, res) => {
+    try {
+        const { companyId, userId } = req.body;
+
+        const company = await Company.findById(companyId)
+        if (!company) return res.status(200).json({
+            message: 'Company not found',
+            data: false
+        });
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(200).json({
+            message: 'User not found',
+            data: false
+        });
+
+        const userIndex = company.users.findIndex(user => user.userId.toString() === userId);
+        if (userIndex === -1) {
+            // find company in agency users array in the assignCompanies array and remove him from there
+            // find from all the agency
+            const agencies = await Agency.find({});
+            for (const agency of agencies) {
+                const userIndex = agency.users.findIndex(user => user.userId.toString() === userId);
+                if (userIndex !== -1) {
+                    const assignCompanyIndex = agency.users[userIndex].assignCompanies.findIndex(company => company.companyId.toString() === companyId);
+                    if (assignCompanyIndex !== -1) {
+                        agency.users[userIndex].assignCompanies.splice(assignCompanyIndex, 1);
+                        await agency.save();
+                        return res.status(200).json({
+                            message: 'Client removed successfully',
+                            data: true
+                        });
+                    }
+                }
+            }
+            
+            
+        } 
+        else{
+            company.users.splice(userIndex, 1);
+            await company.save();
+            return res.status(200).json({
+                message: 'Client removed successfully',
+                data: true
+            });
+        }
+    } catch (error) {
+        res.status(200).json({
+            error: error.message,
+            data: false,
+            message: "client not removed"
+        });
+    }
+};
 
 
+// these are the client who have assoiated with you indirectly(not created by you but you have access to them)
+const getAllClientAssociateWithYou = async (req, res) => {
+    try {
+        const { userId } = req.query;
 
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(200).json({ data: false, message: 'Invalid userId' });
+        }
+
+        let companies = [];
+
+        // Step 1: Find companies where the user is in the users array or the creator
+        const userCompanies = await Company.find({
+            $or: [
+                { users: { $elemMatch: { userId: userId } } },
+                { createdBy: userId }
+            ]
+        }).populate('contactPerson', 'userName'); // Populate contactPerson for direct companies
+
+        // Filter out companies where the user is the contactPerson
+        const filteredUserCompanies = userCompanies.filter(company => {
+            return company.contactPerson && company.contactPerson._id.toString() !== userId;
+        });
+
+        // Add filtered userCompanies to results
+        filteredUserCompanies.forEach(company => {
+            companies.push({
+                name: company.name,
+                setBaseYear: company.setBaseYear,
+                registrationNumber: company.registrationNumber,
+                contactPerson: company.contactPerson ? company.contactPerson.userName : 'Unknown',
+                id: company._id
+            });
+        });
+
+        // Step 2: Check if user is part of an agency (directly), and try to add that agency's company
+        const userAgency = await Agency.findOne({
+            "users.userId": userId
+        }).populate('registrationNumber'); // This might need adjustment if registrationNumber isn't a ref
+
+        if (userAgency && userAgency.registrationNumber) {
+            // find the company by registrationNumber
+            const company = await Company.findOne({ registrationNumber: userAgency.registrationNumber });
+
+            if (company) {
+                // Check if the user is the contact person of this company
+                const contactPersonUser = await User.findById(company.contactPerson);
+                if (company.contactPerson.toString() !== userId) {
+                    companies.push({
+                        name: company.name,
+                        setBaseYear: company.setBaseYear,
+                        registrationNumber: company.registrationNumber,
+                        contactPerson: contactPersonUser ? contactPersonUser.userName : 'Unknown',
+                        id: company._id
+                    });
+                }
+            }
+        }
+
+        // Step 3: Find agencies where the user is in the users array and look at assigned companies
+        const userAgencies = await Agency.find({
+            "users.userId": userId
+        }).populate({
+            path: 'users.assignCompanies.companyId',
+            populate: { path: 'contactPerson', select: 'userName' }
+        });
+
+        // Process user agencies' assigned companies
+        for (const agency of userAgencies) {
+            // Find the specific user in the agency's users array
+            const agencyUser = agency.users.find(user => user.userId.toString() === userId);
+            if (agencyUser && agencyUser.assignCompanies && agencyUser.assignCompanies.length > 0) {
+                // If the user has assigned companies, filter out those where the user is contact person
+                for (const assignedCompanyObj of agencyUser.assignCompanies) {
+                    const assignedCompany = assignedCompanyObj.companyId;
+                    if (!assignedCompany) continue; // In case of missing company
+
+                    // assignedCompany.contactPerson might be a populated doc or null
+                    if (assignedCompany.contactPerson && assignedCompany.contactPerson._id.toString() !== userId) {
+                        companies.push({
+                            name: assignedCompany.name,
+                            setBaseYear: assignedCompany.setBaseYear,
+                            registrationNumber: assignedCompany.registrationNumber,
+                            contactPerson: assignedCompany.contactPerson ? assignedCompany.contactPerson.userName : 'Unknown',
+                            id: assignedCompany._id
+                        });
+                    }
+                }
+            }
+        }
+
+        // Remove duplicates (if any) by checking unique `id`
+        const uniqueCompanies = companies.reduce((acc, current) => {
+            if (!acc.find(company => company.id.toString() === current.id.toString())) {
+                acc.push(current);
+            }
+            return acc;
+        }, []);
+
+        return res.status(200).json({
+            message: 'Associated companies fetched successfully',
+            data: uniqueCompanies,
+        });
+    } catch (error) {
+        console.error('Error fetching associated companies:', error);
+        return res.status(200).json({
+            data: false,
+            error: error.message,
+            message: 'Internal Server Error'
+        });
+    }
+};
 
 module.exports = {
     createCompany,
     getCompanies,
     getCompanyData,
-    getCompanyUsers
+    getCompanyUsers,
+    getAllClientAssociateWithYou,
+    removeClient
 };

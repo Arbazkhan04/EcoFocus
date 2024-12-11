@@ -25,3 +25,13 @@ export const getCompanyUsers = async (companyId) => {
     const res = await api.get(`/companyManagementRoutes/getCompanyUsers?companyId=${companyId}`)
     return res.data;
 }
+
+export const getAllClientAssociateWithYou = async (userId) => {
+    const res = await api.get(`/companyManagementRoutes/getAllClientAssociateWithYou?userId=${userId}`);
+    return res.data;
+}
+
+export const removeClient = async (companyId,userId) => {
+    const res = await api.post('/companyManagementRoutes/removeclient', {userId,companyId});
+    return res.data;
+}

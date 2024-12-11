@@ -326,7 +326,7 @@ const acceptRequestOrDeclineRequest = async (req, res) => {
 
                 agency.users.push({
                     userId: user._id,
-                    role: request.role,
+                    role: request.role == 'agency_admin' ? 'admin' : 'user',
                     assignCompanyId: request.from
                 });
 
